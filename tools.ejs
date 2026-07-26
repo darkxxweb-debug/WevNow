@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Tools</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </div>
+    </div>
+
+    <h1 class="page-title">Tools &amp; apps</h1>
+    <p class="page-sub">Shared by the community. Tap the plus button to add your own.</p>
+
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="searchInput" placeholder="Search tools...">
+    </div>
+
+    <div class="chip-row" id="categoryRow">
+      <span class="chip active" data-cat="All">All</span>
+    </div>
+
+    <div class="tool-list" id="toolList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-box-open"></i></div>
+      <div>No tools yet. Be the first to add one.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/tools.js"></script>
+</body>
+</html>

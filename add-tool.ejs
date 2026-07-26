@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Add tool</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <a href="/tools" class="btn-ghost btn" style="padding:10px 14px;">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div class="brand-name">Add a tool</div>
+    </div>
+
+    <p class="page-sub">Share an app, tool, or link with the community.</p>
+
+    <form class="card" id="addToolForm">
+      <div class="field">
+        <label for="name">Name *</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Audio Trimmer" required>
+      </div>
+
+      <div class="field">
+        <label for="link">Link *</label>
+        <input type="url" id="link" name="link" placeholder="https://..." required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="size">Size</label>
+          <input type="text" id="size" name="size" placeholder="e.g. 12MB">
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option>App</option>
+            <option>Website</option>
+            <option>Script</option>
+            <option>Bot</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ownerNumber">Owner contact number</label>
+        <input type="tel" id="ownerNumber" name="ownerNumber" placeholder="e.g. +255 7XX XXX XXX">
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="What does it do?"></textarea>
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="submitBtn">
+        <i class="fa-solid fa-plus"></i> Add tool
+      </button>
+
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/add-tool.js"></script>
+</body>
+</html>

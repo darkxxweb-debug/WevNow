@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Music Downloader</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </div>
+    </div>
+
+    <h1 class="page-title">Download a track</h1>
+    <p class="page-sub">Paste a YouTube link below. We'll pull the best audio and video quality for you.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="url">YouTube link</label>
+        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+      </div>
+      <button class="btn btn-primary" id="downloadBtn">
+        <i class="fa-solid fa-download"></i> Get download links
+      </button>
+
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div class="result-head">
+        <img class="result-thumb" id="resultThumb" src="" alt="">
+        <div class="result-title" id="resultTitle"></div>
+      </div>
+      <div class="result-actions">
+        <a class="btn btn-teal" id="audioLink" target="_blank" rel="noopener" style="display:none">
+          <i class="fa-solid fa-music"></i> Audio
+        </a>
+        <a class="btn btn-ghost" id="videoLink" target="_blank" rel="noopener" style="display:none">
+          <i class="fa-solid fa-video"></i> Video
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/download.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · History</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </div>
+    </div>
+
+    <h1 class="page-title">Recent downloads</h1>
+    <p class="page-sub">Your last 30 downloads, newest first.</p>
+
+    <div class="tool-list" id="historyList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div>Nothing downloaded yet.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/history.js"></script>
+</body>
+</html>
