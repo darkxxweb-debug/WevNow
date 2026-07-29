@@ -54,6 +54,7 @@ app.get('/js/referrals.js', (req, res) => res.sendFile(path.join(__dirname, 'ref
 app.get('/js/whatsapp.js', (req, res) => res.sendFile(path.join(__dirname, 'whatsapp.client.js')));
 app.get('/js/vcf.js', (req, res) => res.sendFile(path.join(__dirname, 'vcf.client.js')));
 app.get('/js/vcf-panel.js', (req, res) => res.sendFile(path.join(__dirname, 'vcf-panel.client.js')));
+app.get('/js/countries.js', (req, res) => res.sendFile(path.join(__dirname, 'countries.client.js')));
 app.get('/js/vcf-explore.js', (req, res) => res.sendFile(path.join(__dirname, 'vcf-explore.client.js')));
 app.get('/js/admin.js', (req, res) => res.sendFile(path.join(__dirname, 'admin.client.js')));
 

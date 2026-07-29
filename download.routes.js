@@ -1,4 +1,5 @@
 const express = require('express');
+const { Readable } = require('stream');
 const router = express.Router();
 const DownloadHistory = require('./DownloadHistory.model');
 
@@ -196,6 +197,63 @@ router.get('/api/download/tiktok', async (req, res) => {
   } catch (err) {
     console.error('TikTok download error:', err.message);
     res.status(500).json({ error: 'Could not fetch this TikTok link. Try again.' });
+  }
+});
+
+// GET /api/download/proxy?url=...&name=... - streams remote media through our server
+// so the browser actually downloads it (instead of just opening/playing it), and so
+// previews load reliably without hotlink/referrer issues.
+router.get('/api/download/proxy', async (req, res) => {
+  const { url, name } = req.query;
+  if (!url) return res.status(400).send('Missing url.');
+
+  let target;
+  try {
+    target = new URL(url);
+  } catch (err) {
+    return res.status(400).send('Invalid url.');
+  }
+  if (target.protocol !== 'http:' && target.protocol !== 'https:') {
+    return res.status(400).send('Invalid url.');
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
+    const upstream = await fetch(target.toString(), {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36',
+      },
+    });
+    clearTimeout(timeout);
+
+    if (!upstream.ok || !upstream.body) {
+      return res.status(502).send('Could not fetch this file from the source.');
+    }
+
+    const contentType = upstream.headers.get('content-type') || 'application/octet-stream';
+    const contentLength = upstream.headers.get('content-length');
+
+    let filename = (name || 'wavehub-download').replace(/[^a-zA-Z0-9._-]/g, '_');
+    if (!/\.[a-z0-9]{2,4}$/i.test(filename)) {
+      if (contentType.includes('mp4')) filename += '.mp4';
+      else if (contentType.includes('webm')) filename += '.webm';
+      else if (contentType.includes('mpeg') || contentType.includes('mp3')) filename += '.mp3';
+      else if (contentType.includes('jpeg')) filename += '.jpg';
+      else if (contentType.includes('png')) filename += '.png';
+      else if (contentType.includes('webp')) filename += '.webp';
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    if (contentLength) res.setHeader('Content-Length', contentLength);
+
+    Readable.fromWeb(upstream.body).pipe(res);
+  } catch (err) {
+    console.error('Proxy download error:', err.message);
+    if (!res.headersSent) res.status(500).send('Could not download this file. Try again.');
   }
 });
 

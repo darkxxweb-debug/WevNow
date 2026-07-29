@@ -101,6 +101,45 @@ async function loadToolsAdmin() {
   }
 }
 
+// ---------- whatsapp groups ----------
+async function loadGroupsAdmin() {
+  const list = document.getElementById('groupsAdminList');
+  try {
+    const res = await fetch('/api/whatsapp');
+    const groups = await res.json();
+    if (!groups.length) {
+      list.innerHTML = '<div class="empty-state"><div class="glyph"><i class="fa-brands fa-whatsapp"></i></div><div>No groups yet.</div></div>';
+      return;
+    }
+    list.innerHTML = groups
+      .map(
+        (g) => `
+      <div class="admin-row">
+        <div class="admin-row-info">
+          <div class="admin-row-title">${escapeHtml(g.name)}</div>
+          <div class="admin-row-sub">${g.clicks} join${g.clicks === 1 ? '' : 's'} &middot; added by ${escapeHtml(g.addedByUsername || 'unknown')}</div>
+        </div>
+        <div class="admin-row-actions">
+          <button class="icon-btn delGroupBtn" data-id="${g._id}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `
+      )
+      .join('');
+
+    list.querySelectorAll('.delGroupBtn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this WhatsApp group?')) return;
+        await fetch(`/api/whatsapp/${btn.dataset.id}`, { method: 'DELETE' });
+        loadGroupsAdmin();
+        loadStats();
+      });
+    });
+  } catch (err) {
+    list.innerHTML = '';
+  }
+}
+
 // ---------- users ----------
 async function loadUsersAdmin() {
   const list = document.getElementById('usersAdminList');
@@ -339,6 +378,7 @@ vcfAdminForm.addEventListener('submit', async (e) => {
   if (!ok) return;
   loadStats();
   loadToolsAdmin();
+  loadGroupsAdmin();
   loadUsersAdmin();
   loadAnnouncementsAdmin();
   loadVisitorsAdmin();

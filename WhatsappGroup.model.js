@@ -13,8 +13,8 @@ const whatsappGroupSchema = new mongoose.Schema(
       required: [true, 'Group link is required'],
       trim: true,
       validate: {
-        validator: (v) => /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(v),
-        message: 'Link must look like https://chat.whatsapp.com/xxxxxxxx',
+        validator: (v) => /^https:\/\/chat\.whatsapp\.com\/\S+$/i.test(v),
+        message: 'Link must start with https://chat.whatsapp.com/',
       },
     },
     clicks: {

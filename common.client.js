@@ -18,22 +18,68 @@ document.querySelectorAll('.menu-toggle').forEach((btn) => {
 if (sideCloseBtn) sideCloseBtn.addEventListener('click', closeSideMenu);
 if (sideOverlay) sideOverlay.addEventListener('click', closeSideMenu);
 
-// ---------- announcement banner ----------
+// ---------- notification bell ----------
+const notifBell = document.getElementById('notifBell');
+const notifDot = document.getElementById('notifDot');
+const notifPanel = document.getElementById('notifPanel');
+const notifPanelBody = document.getElementById('notifPanelBody');
+
+function timeAgoShort(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
 async function loadAnnouncement() {
-  const banner = document.getElementById('announceBanner');
-  if (!banner) return;
+  if (!notifBell) return;
   try {
     const res = await fetch('/api/announcements/active');
     const data = await res.json();
+
     if (data.announcement && data.announcement.message) {
-      banner.innerHTML = `<i class="fa-solid fa-bullhorn"></i> <span>${data.announcement.message}</span>`;
-      banner.style.display = 'flex';
+      const a = data.announcement;
+      notifPanelBody.innerHTML = `
+        <div class="notif-item">
+          <div class="notif-item-msg">${a.message}</div>
+          <div class="notif-item-time">${timeAgoShort(a.createdAt)}</div>
+        </div>`;
+
+      const seenId = localStorage.getItem('wh_seen_announcement');
+      if (seenId !== a._id) {
+        notifDot.style.display = 'block';
+      }
+    } else {
+      notifPanelBody.innerHTML = '<div class="notif-empty">No notifications yet.</div>';
     }
   } catch (err) {
     // silent
   }
 }
 loadAnnouncement();
+
+if (notifBell) {
+  notifBell.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    notifPanel.classList.toggle('open');
+    if (notifPanel.classList.contains('open')) {
+      notifDot.style.display = 'none';
+      try {
+        const res = await fetch('/api/announcements/active');
+        const data = await res.json();
+        if (data.announcement) localStorage.setItem('wh_seen_announcement', data.announcement._id);
+      } catch (err) {
+        // silent
+      }
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (!notifPanel.contains(e.target) && e.target !== notifBell) {
+      notifPanel.classList.remove('open');
+    }
+  });
+}
 
 // ---------- auth state in side menu ----------
 async function loadAuthState() {

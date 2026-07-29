@@ -1,5 +1,4 @@
 const urlInput = document.getElementById('url');
-const urlLabel = document.getElementById('urlLabel');
 const downloadBtn = document.getElementById('downloadBtn');
 const statusMsg = document.getElementById('statusMsg');
 const resultCard = document.getElementById('resultCard');
@@ -8,6 +7,7 @@ const resultTitle = document.getElementById('resultTitle');
 const audioLink = document.getElementById('audioLink');
 const videoLink = document.getElementById('videoLink');
 const mediaGrid = document.getElementById('mediaGrid');
+const previewWrap = document.getElementById('previewWrap');
 const platformTabs = document.getElementById('platformTabs');
 
 let platform = 'youtube';
@@ -42,7 +42,29 @@ function clearStatus() {
 function resetResult() {
   audioLink.style.display = 'none';
   videoLink.style.display = 'none';
+  audioLink.innerHTML = '<i class="fa-solid fa-music"></i> Audio';
+  videoLink.innerHTML = '<i class="fa-solid fa-video"></i> Video';
   mediaGrid.innerHTML = '';
+  previewWrap.innerHTML = '';
+}
+
+// Builds a proxy URL so previews load reliably and downloads actually save
+// the file instead of just opening it in the browser.
+function proxied(mediaUrl, filename) {
+  return `/api/download/proxy?url=${encodeURIComponent(mediaUrl)}&name=${encodeURIComponent(filename)}`;
+}
+
+function safeName(title, ext) {
+  const clean = (title || 'wavehub-media').replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0, 50) || 'wavehub-media';
+  return `${clean}.${ext}`;
+}
+
+function addVideoPreview(src) {
+  previewWrap.innerHTML = `<video class="preview-media" controls playsinline preload="metadata" src="${src}"></video>`;
+}
+
+function addImagePreview(src) {
+  previewWrap.innerHTML = `<img class="preview-media" src="${src}" alt="Preview">`;
 }
 
 async function handleYoutube(url) {
@@ -53,13 +75,18 @@ async function handleYoutube(url) {
   resultTitle.textContent = data.title;
   resultThumb.src = data.thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
 
-  if (data.audio && data.audio.url) {
-    audioLink.href = data.audio.url;
-    audioLink.style.display = 'inline-flex';
-  }
   if (data.video && data.video.url) {
-    videoLink.href = data.video.url;
+    const dl = proxied(data.video.url, safeName(data.title, 'mp4'));
+    addVideoPreview(dl);
+    videoLink.href = dl;
+    videoLink.setAttribute('download', '');
     videoLink.style.display = 'inline-flex';
+  }
+  if (data.audio && data.audio.url) {
+    const dl = proxied(data.audio.url, safeName(data.title, 'mp3'));
+    audioLink.href = dl;
+    audioLink.setAttribute('download', '');
+    audioLink.style.display = 'inline-flex';
   }
 }
 
@@ -72,11 +99,17 @@ async function handleTiktok(url) {
   resultThumb.src = data.thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
 
   if (data.video) {
-    videoLink.href = data.video;
+    const dl = proxied(data.video, safeName(data.title, 'mp4'));
+    addVideoPreview(dl);
+    videoLink.href = dl;
+    videoLink.setAttribute('download', '');
     videoLink.style.display = 'inline-flex';
   }
   if (data.audio) {
-    audioLink.href = data.audio;
+    const dl = proxied(data.audio, safeName(data.title, 'mp3'));
+    audioLink.href = dl;
+    audioLink.setAttribute('download', '');
+    audioLink.innerHTML = '<i class="fa-solid fa-music"></i> Audio only';
     audioLink.style.display = 'inline-flex';
   }
 }
@@ -89,14 +122,20 @@ async function handleFb(url) {
   resultTitle.textContent = data.title || 'Facebook video';
   resultThumb.src = data.thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
 
+  const previewSrc = data.hd || data.sd;
+  if (previewSrc) addVideoPreview(proxied(previewSrc, safeName(data.title, 'mp4')));
+
   if (data.hd) {
-    videoLink.href = data.hd;
-    videoLink.textContent = '';
+    const dl = proxied(data.hd, safeName(data.title, 'mp4'));
+    videoLink.href = dl;
+    videoLink.setAttribute('download', '');
     videoLink.innerHTML = '<i class="fa-solid fa-video"></i> HD';
     videoLink.style.display = 'inline-flex';
   }
   if (data.sd) {
-    audioLink.href = data.sd;
+    const dl = proxied(data.sd, safeName(data.title, 'mp4'));
+    audioLink.href = dl;
+    audioLink.setAttribute('download', '');
     audioLink.innerHTML = '<i class="fa-solid fa-video"></i> SD';
     audioLink.style.display = 'inline-flex';
   }
@@ -110,12 +149,18 @@ async function handleIg(url) {
   resultTitle.textContent = `Instagram media (${data.medias.length})`;
   resultThumb.src = data.medias[0].thumbnail || 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
 
+  const first = data.medias[0];
+  if (first.type === 'image') addImagePreview(proxied(first.url, safeName('instagram', 'jpg')));
+  else addVideoPreview(proxied(first.url, safeName('instagram', 'mp4')));
+
   mediaGrid.innerHTML = data.medias
-    .map(
-      (m, i) => `<a class="btn btn-ghost" href="${m.url}" target="_blank" rel="noopener">
+    .map((m, i) => {
+      const ext = m.type === 'image' ? 'jpg' : 'mp4';
+      const dl = proxied(m.url, safeName(`instagram-${i + 1}`, ext));
+      return `<a class="btn btn-ghost" href="${dl}" download>
         <i class="fa-solid ${m.type === 'image' ? 'fa-image' : 'fa-video'}"></i> ${m.type === 'image' ? 'Photo' : 'Video'} ${i + 1}
-      </a>`
-    )
+      </a>`;
+    })
     .join('');
 }
 

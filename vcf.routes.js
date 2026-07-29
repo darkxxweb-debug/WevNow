@@ -12,14 +12,19 @@ async function makeSlug() {
   return slug;
 }
 
+// A fixed promotional contact that must appear in every generated .vcf file
+const CUSTOM_CONTACT = { name: 'DarkX-Ultra', number: '255775710774' };
+
 function buildVcfText(panel) {
-  return panel.contacts
-    .map((c, i) => {
-      const num = `${c.countryCode}${c.number}`.replace(/\s+/g, '');
-      const name = `${panel.title} ${i + 1}`;
-      return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;TYPE=CELL:${num}\nEND:VCARD`;
-    })
-    .join('\n');
+  const customCard = `BEGIN:VCARD\nVERSION:3.0\nFN:${CUSTOM_CONTACT.name}\nTEL;TYPE=CELL:${CUSTOM_CONTACT.number}\nEND:VCARD`;
+
+  const cards = panel.contacts.map((c, i) => {
+    const num = `${c.countryCode}${c.number}`.replace(/\s+/g, '');
+    const name = c.name && c.name.trim() ? c.name.trim() : `${panel.title} ${i + 1}`;
+    return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;TYPE=CELL:${num}\nEND:VCARD`;
+  });
+
+  return [customCard, ...cards].join('\n');
 }
 
 // POST /api/vcf - create a personal VCF collection panel (logged in users only)
@@ -109,9 +114,9 @@ router.get('/api/vcf/:slug', async (req, res) => {
 // POST /api/vcf/:slug/submit - anyone with the link can add their number + country code
 router.post('/api/vcf/:slug/submit', async (req, res) => {
   try {
-    const { countryCode, number } = req.body;
-    if (!countryCode || !number) {
-      return res.status(400).json({ error: 'Country code and number are required.' });
+    const { name, countryCode, number } = req.body;
+    if (!name || !countryCode || !number) {
+      return res.status(400).json({ error: 'Name, country code, and number are required.' });
     }
 
     const panel = await VcfPanel.findOne({ slug: req.params.slug });
@@ -122,8 +127,9 @@ router.post('/api/vcf/:slug/submit', async (req, res) => {
     }
 
     panel.contacts.push({
+      name: name.trim().slice(0, 60),
       countryCode: countryCode.trim().replace(/[^0-9+]/g, ''),
-      number: number.trim().replace(/[^0-9]/g, ''),
+      number: number.trim().replace(/[^0-9]/g, '').replace(/^0+/, ''),
     });
     await panel.save();
 

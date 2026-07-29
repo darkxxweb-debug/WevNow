@@ -9,6 +9,10 @@
     <div class="topbar">
       <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="brand-name" id="panelTitle">VCF Panel</div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
     </div>
 
     <%- include('sidemenu') %>
@@ -16,16 +20,24 @@
     <p class="page-sub" id="panelSub">Add your number to this contact panel.</p>
 
     <form class="card" id="submitForm">
-      <div class="field-inline">
-        <div class="field">
-          <label for="countryCode">Code *</label>
-          <input type="text" id="countryCode" placeholder="+255" required>
-        </div>
-        <div class="field" style="flex:1;">
-          <label for="number">Phone number *</label>
-          <input type="tel" id="number" placeholder="7XXXXXXXX" required>
+      <div class="field">
+        <label for="country">Country</label>
+        <select id="country"></select>
+      </div>
+
+      <div class="field">
+        <label for="fullName">Your name *</label>
+        <input type="text" id="fullName" placeholder="e.g. John Mahmoud" required maxlength="60">
+      </div>
+
+      <div class="field">
+        <label for="number">Phone number *</label>
+        <div class="number-input-wrap">
+          <span class="dial-code-prefix" id="dialCodePrefix">+255</span>
+          <input type="tel" id="number" placeholder="775710774" required>
         </div>
       </div>
+
       <button class="btn btn-primary" type="submit" id="submitBtn">
         <i class="fa-solid fa-check"></i> Save my number
       </button>
@@ -41,6 +53,7 @@
   </div>
 
   <%- include('bottomnav') %>
+  <script src="/js/countries.js"></script>
   <script src="/js/vcf-panel.js"></script>
 </body>
 </html>

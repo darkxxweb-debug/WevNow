@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const contactSchema = new mongoose.Schema(
   {
+    name: { type: String, trim: true, default: '', maxlength: 60 },
     countryCode: { type: String, trim: true, required: true, maxlength: 6 },
     number: { type: String, trim: true, required: true, maxlength: 20 },
     addedAt: { type: Date, default: Date.now },

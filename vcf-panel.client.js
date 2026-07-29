@@ -7,6 +7,24 @@ const statusMsg = document.getElementById('statusMsg');
 const ownerBox = document.getElementById('ownerBox');
 const countInfo = document.getElementById('countInfo');
 const downloadLink = document.getElementById('downloadLink');
+const countrySelect = document.getElementById('country');
+const dialCodePrefix = document.getElementById('dialCodePrefix');
+const numberInput = document.getElementById('number');
+
+// ---------- country picker ----------
+if (typeof COUNTRIES !== 'undefined' && countrySelect) {
+  countrySelect.innerHTML = COUNTRIES.map(
+    (c) => `<option value="${c.d}">${c.n} (+${c.d})</option>`
+  ).join('');
+
+  const defaultIndex = COUNTRIES.findIndex((c) => c.c === 'TZ');
+  if (defaultIndex >= 0) countrySelect.selectedIndex = defaultIndex;
+  dialCodePrefix.textContent = `+${countrySelect.value}`;
+
+  countrySelect.addEventListener('change', () => {
+    dialCodePrefix.textContent = `+${countrySelect.value}`;
+  });
+}
 
 async function loadPanel() {
   try {
@@ -37,8 +55,9 @@ async function loadPanel() {
 
 submitForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const countryCode = document.getElementById('countryCode').value.trim();
-  const number = document.getElementById('number').value.trim();
+  const fullName = document.getElementById('fullName').value.trim();
+  const countryCode = countrySelect.value;
+  const number = numberInput.value.trim().replace(/^0+/, '');
 
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<span class="loader"><span></span><span></span><span></span></span> Saving...';
@@ -47,7 +66,7 @@ submitForm.addEventListener('submit', async (e) => {
     const res = await fetch(`/api/vcf/${slug}/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ countryCode, number }),
+      body: JSON.stringify({ name: fullName, countryCode, number }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Could not save your number.');
@@ -55,6 +74,11 @@ submitForm.addEventListener('submit', async (e) => {
     statusMsg.textContent = 'Saved! Thank you for joining.';
     statusMsg.className = 'status-msg show info';
     submitForm.reset();
+    if (typeof COUNTRIES !== 'undefined') {
+      const defaultIndex = COUNTRIES.findIndex((c) => c.c === 'TZ');
+      if (defaultIndex >= 0) countrySelect.selectedIndex = defaultIndex;
+      dialCodePrefix.textContent = `+${countrySelect.value}`;
+    }
   } catch (err) {
     statusMsg.textContent = err.message;
     statusMsg.className = 'status-msg show error';

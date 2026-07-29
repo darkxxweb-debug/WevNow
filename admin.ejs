@@ -9,6 +9,10 @@
     <div class="topbar">
       <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="brand-name">Site Manager</div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
     </div>
 
     <%- include('sidemenu') %>
@@ -25,6 +29,7 @@
 
       <div class="admin-tabs" id="adminTabs">
         <div class="admin-tab active" data-tab="tools">Tools</div>
+        <div class="admin-tab" data-tab="groups">WhatsApp Groups</div>
         <div class="admin-tab" data-tab="users">Users</div>
         <div class="admin-tab" data-tab="announcements">Announcements</div>
         <div class="admin-tab" data-tab="visitors">Visitors</div>
@@ -34,6 +39,11 @@
       <!-- Tools -->
       <div class="admin-panel-section active" id="section-tools">
         <div id="toolsAdminList"></div>
+      </div>
+
+      <!-- WhatsApp Groups -->
+      <div class="admin-panel-section" id="section-groups">
+        <div id="groupsAdminList"></div>
       </div>
 
       <!-- Users -->

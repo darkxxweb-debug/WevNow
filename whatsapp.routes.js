@@ -3,7 +3,7 @@ const router = express.Router();
 const WhatsappGroup = require('./WhatsappGroup.model');
 const { requireAuth, requireAdmin } = require('./middleware');
 
-const LINK_PATTERN = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/;
+const LINK_PATTERN = /^https:\/\/chat\.whatsapp\.com\/\S+$/i;
 
 // GET /api/whatsapp - most popular (most clicked) groups first
 router.get('/api/whatsapp', async (req, res) => {

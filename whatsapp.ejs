@@ -9,6 +9,10 @@
     <div class="topbar">
       <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="brand-name">Discover WhatsApp Groups</div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
     </div>
 
     <%- include('sidemenu') %>
@@ -24,7 +28,7 @@
         </div>
         <div class="field">
           <label for="groupLink">Group link *</label>
-          <input type="text" id="groupLink" placeholder="https://chat.whatsapp.com/xxxxxxxx" required>
+          <input type="text" id="groupLink" placeholder="https://chat.whatsapp.com/..." required>
         </div>
         <button class="btn btn-primary" type="submit" id="addGroupBtn">
           <i class="fa-solid fa-plus"></i> Add group
