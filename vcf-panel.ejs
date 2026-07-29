@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · VCF Panel</title>
+  <%- include('head') %>
+</head>
+<body data-slug="<%= slug %>">
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name" id="panelTitle">VCF Panel</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub" id="panelSub">Add your number to this contact panel.</p>
+
+    <form class="card" id="submitForm">
+      <div class="field-inline">
+        <div class="field">
+          <label for="countryCode">Code *</label>
+          <input type="text" id="countryCode" placeholder="+255" required>
+        </div>
+        <div class="field" style="flex:1;">
+          <label for="number">Phone number *</label>
+          <input type="tel" id="number" placeholder="7XXXXXXXX" required>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" id="submitBtn">
+        <i class="fa-solid fa-check"></i> Save my number
+      </button>
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+
+    <div class="referral-box" id="ownerBox" style="display:none;margin-top:16px;">
+      <div class="tool-name" id="countInfo"></div>
+      <div class="vcf-actions" style="margin-top:10px;">
+        <a class="btn btn-teal" id="downloadLink" href="#"><i class="fa-solid fa-download"></i> Download .vcf</a>
+      </div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/vcf-panel.js"></script>
+</body>
+</html>

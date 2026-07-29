@@ -93,4 +93,110 @@ router.get('/api/history', async (req, res) => {
   }
 });
 
+// ---------- Instagram / Facebook / TikTok downloaders ----------
+
+async function fetchJson(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+    if (!response.ok) throw new Error(`Upstream error: ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// GET /api/download/ig?url=...
+router.get('/api/download/ig', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Please provide an Instagram link.' });
+
+  try {
+    const data = await fetchJson(`https://api-aswin-sparky.koyeb.app/api/downloader/igdl?url=${encodeURIComponent(url)}`);
+    const list = data.data || data.result || data.results || [];
+    const medias = (Array.isArray(list) ? list : [list]).map((item) => ({
+      url: item.url || item.download_url || item.link || '',
+      type: (item.type || item.resolution || '').toLowerCase().includes('image') ? 'image' : 'video',
+      thumbnail: item.thumbnail || item.thumb || '',
+    })).filter((m) => m.url);
+
+    if (!medias.length) return res.status(422).json({ error: 'No downloadable media found for this link.' });
+
+    DownloadHistory.create({
+      title: 'Instagram media',
+      thumbnail: medias[0].thumbnail || '',
+      sourceUrl: url,
+      videoUrl: medias.find((m) => m.type === 'video')?.url || '',
+      audioUrl: '',
+    }).catch(() => {});
+
+    res.json({ medias });
+  } catch (err) {
+    console.error('IG download error:', err.message);
+    res.status(500).json({ error: 'Could not fetch this Instagram link. Try again.' });
+  }
+});
+
+// GET /api/download/fb?url=...
+router.get('/api/download/fb', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Please provide a Facebook link.' });
+
+  try {
+    const data = await fetchJson(`https://movanest.xyz/v2/fbdown?url=${encodeURIComponent(url)}`);
+    const result = data.data || data.result || data;
+    const hd = result.hd || result.HD || result.high || '';
+    const sd = result.sd || result.SD || result.low || result.normal || '';
+
+    if (!hd && !sd) return res.status(422).json({ error: 'No downloadable video found for this link.' });
+
+    DownloadHistory.create({
+      title: result.title || 'Facebook video',
+      thumbnail: result.thumbnail || '',
+      sourceUrl: url,
+      videoUrl: hd || sd,
+      audioUrl: '',
+    }).catch(() => {});
+
+    res.json({ hd, sd, title: result.title || 'Facebook video', thumbnail: result.thumbnail || '' });
+  } catch (err) {
+    console.error('FB download error:', err.message);
+    res.status(500).json({ error: 'Could not fetch this Facebook link. Try again.' });
+  }
+});
+
+// GET /api/download/tiktok?url=...
+router.get('/api/download/tiktok', async (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Please provide a TikTok link.' });
+
+  try {
+    const data = await fetchJson(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+    const result = data.data;
+    if (!result) return res.status(422).json({ error: 'No downloadable video found for this link.' });
+
+    const videoUrl = result.play ? `https://www.tikwm.com${result.play}` : (result.hdplay ? `https://www.tikwm.com${result.hdplay}` : '');
+    const audioUrl = result.music ? (result.music.startsWith('http') ? result.music : `https://www.tikwm.com${result.music}`) : '';
+
+    DownloadHistory.create({
+      title: result.title || 'TikTok video',
+      thumbnail: result.cover || '',
+      sourceUrl: url,
+      videoUrl,
+      audioUrl,
+    }).catch(() => {});
+
+    res.json({
+      title: result.title || 'TikTok video',
+      thumbnail: result.cover || '',
+      video: videoUrl,
+      audio: audioUrl,
+    });
+  } catch (err) {
+    console.error('TikTok download error:', err.message);
+    res.status(500).json({ error: 'Could not fetch this TikTok link. Try again.' });
+  }
+});
+
 module.exports = router;

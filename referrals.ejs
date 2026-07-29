@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Referrals</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">Referral Business</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Invite friends with your link. The more people you bring in, the higher you climb.</p>
+
+    <div class="referral-box" id="myReferralBox" style="display:none">
+      <div class="tool-name">Your referral link</div>
+      <div class="referral-link-row">
+        <input type="text" id="myRefLink" readonly>
+        <button class="btn btn-primary" id="copyRefBtn" style="width:auto;padding:10px 16px;"><i class="fa-solid fa-copy"></i></button>
+      </div>
+    </div>
+
+    <div class="status-msg show error" id="loginNotice" style="display:none">
+      <a href="/register" style="text-decoration:underline;">Register</a> to get your own referral link and join the leaderboard.
+    </div>
+
+    <h1 class="page-title" style="font-size:1.05rem;margin-bottom:12px;">Popular sharers</h1>
+    <div id="leaderboardList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-people-group"></i></div>
+      <div>No referrals yet. Be the first to invite someone.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/referrals.js"></script>
+</body>
+</html>

@@ -8,9 +8,22 @@ const toolSchema = new mongoose.Schema(
       trim: true,
       maxlength: 100,
     },
-    link: {
+    coverPhoto: {
       type: String,
-      required: [true, 'Link is required'],
+      trim: true,
+      default: '',
+    },
+    previewLinks: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (arr) => arr.length <= 8,
+        message: 'You can add up to 8 preview links only.',
+      },
+    },
+    downloadLink: {
+      type: String,
+      required: [true, 'Download link is required'],
       trim: true,
     },
     category: {
@@ -35,6 +48,16 @@ const toolSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 500,
+      default: '',
+    },
+    ownerUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    ownerUsername: {
+      type: String,
+      trim: true,
       default: '',
     },
   },

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Explore VCF Panels</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">Explore VCF Panels</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Public contact panels shared by the site. Most popular first.</p>
+
+    <div id="explorePanelList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-compass"></i></div>
+      <div>No public VCF panels right now.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/vcf-explore.js"></script>
+</body>
+</html>

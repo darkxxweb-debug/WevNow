@@ -7,14 +7,17 @@
 <body>
   <div class="shell">
     <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="brand">
         <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
         <div class="brand-name">Wave<span>Hub</span></div>
       </div>
     </div>
 
+    <%- include('sidemenu') %>
+
     <h1 class="page-title">Tools &amp; apps</h1>
-    <p class="page-sub">Shared by the community. Tap the plus button to add your own.</p>
+    <p class="page-sub">Shared by the community. Tap the plus button to add your own (registered users only).</p>
 
     <div class="field" style="margin-bottom:14px;">
       <input type="text" id="searchInput" placeholder="Search tools...">

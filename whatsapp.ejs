@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · WhatsApp Groups</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">Discover WhatsApp Groups</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Browse community WhatsApp groups. The most joined groups float to the top.</p>
+
+    <details class="card" style="margin-bottom:16px;">
+      <summary style="cursor:pointer;font-weight:600;"><i class="fa-solid fa-plus"></i> Add a WhatsApp group</summary>
+      <form id="addGroupForm" style="margin-top:14px;">
+        <div class="field">
+          <label for="groupName">Group name *</label>
+          <input type="text" id="groupName" placeholder="e.g. Tech Talk TZ" required>
+        </div>
+        <div class="field">
+          <label for="groupLink">Group link *</label>
+          <input type="text" id="groupLink" placeholder="https://chat.whatsapp.com/xxxxxxxx" required>
+        </div>
+        <button class="btn btn-primary" type="submit" id="addGroupBtn">
+          <i class="fa-solid fa-plus"></i> Add group
+        </button>
+        <div class="status-msg" id="addGroupStatus"></div>
+      </form>
+    </details>
+
+    <div id="groupList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-brands fa-whatsapp"></i></div>
+      <div>No groups yet. Be the first to add one.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/whatsapp.js"></script>
+</body>
+</html>

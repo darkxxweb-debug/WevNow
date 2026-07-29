@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · My VCF Panels</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">My VCF Panels</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Create a panel, share its link, and let people add their number and country code. Download the contacts as a .vcf file anytime.</p>
+
+    <div class="status-msg show error" id="loginNotice" style="display:none">
+      <a href="/register" style="text-decoration:underline;">Register</a> or <a href="/login" style="text-decoration:underline;">log in</a> to create a VCF panel.
+    </div>
+
+    <form class="card" id="createPanelForm" style="margin-bottom:20px;">
+      <div class="field">
+        <label for="panelTitle">Panel title *</label>
+        <input type="text" id="panelTitle" placeholder="e.g. My contacts" required>
+      </div>
+      <button class="btn btn-primary" type="submit" id="createPanelBtn">
+        <i class="fa-solid fa-plus"></i> Create panel
+      </button>
+      <div class="status-msg" id="createStatus"></div>
+    </form>
+
+    <div id="panelList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-address-book"></i></div>
+      <div>You haven't created any VCF panels yet.</div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/vcf.js"></script>
+</body>
+</html>

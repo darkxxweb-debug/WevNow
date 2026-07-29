@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Site Manager</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">Site Manager</div>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <div id="lockScreen" class="lock-screen" style="display:none">
+      <i class="fa-solid fa-lock"></i>
+      <h1 class="page-title" style="font-size:1.1rem;">Access required</h1>
+      <p class="page-sub">Unlock the site manager from the side menu (mrxonly) first.</p>
+      <a href="/" class="btn btn-ghost" style="display:inline-flex;width:auto;padding:10px 20px;margin-top:10px;">Go home</a>
+    </div>
+
+    <div id="adminDashboard" style="display:none">
+      <div class="admin-stat-grid" id="statGrid"></div>
+
+      <div class="admin-tabs" id="adminTabs">
+        <div class="admin-tab active" data-tab="tools">Tools</div>
+        <div class="admin-tab" data-tab="users">Users</div>
+        <div class="admin-tab" data-tab="announcements">Announcements</div>
+        <div class="admin-tab" data-tab="visitors">Visitors</div>
+        <div class="admin-tab" data-tab="vcf">VCF Admin</div>
+      </div>
+
+      <!-- Tools -->
+      <div class="admin-panel-section active" id="section-tools">
+        <div id="toolsAdminList"></div>
+      </div>
+
+      <!-- Users -->
+      <div class="admin-panel-section" id="section-users">
+        <div id="usersAdminList"></div>
+      </div>
+
+      <!-- Announcements -->
+      <div class="admin-panel-section" id="section-announcements">
+        <form class="card" id="announcementForm" style="margin-bottom:16px;">
+          <div class="field">
+            <label for="announcementMsg">Post a new announcement</label>
+            <textarea id="announcementMsg" placeholder="Shown as a banner across the site..."></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-bullhorn"></i> Post announcement</button>
+          <div class="status-msg" id="announcementStatus"></div>
+        </form>
+        <div id="announcementsAdminList"></div>
+      </div>
+
+      <!-- Visitors -->
+      <div class="admin-panel-section" id="section-visitors">
+        <div class="admin-stat" style="margin-bottom:16px;">
+          <div class="admin-stat-num" id="visitorTotal">0</div>
+          <div class="admin-stat-label">total page views</div>
+        </div>
+        <div id="visitorsAdminList"></div>
+      </div>
+
+      <!-- VCF Admin -->
+      <div class="admin-panel-section" id="section-vcf">
+        <form class="card" id="vcfAdminForm" style="margin-bottom:16px;">
+          <div class="field">
+            <label for="vcfTitle">Panel title *</label>
+            <input type="text" id="vcfTitle" placeholder="e.g. VIP contacts" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="vcfTarget">Target count (0 = no limit)</label>
+              <input type="number" id="vcfTarget" min="0" value="0">
+            </div>
+            <div class="field">
+              <label for="vcfDuration">Duration in hours (0 = no expiry)</label>
+              <input type="number" id="vcfDuration" min="0" value="0">
+            </div>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px;font-weight:500;">
+              <input type="checkbox" id="vcfPublic" style="width:auto;"> Public (visible on Explore)
+            </label>
+          </div>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plus"></i> Create VCF panel</button>
+          <div class="status-msg" id="vcfAdminStatus"></div>
+        </form>
+        <div id="vcfAdminList"></div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

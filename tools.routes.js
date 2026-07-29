@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Tool = require('./Tool.model');
+const { requireAuth, requireAdmin } = require('./middleware');
 
 // GET /api/tools - list all, newest first, optional ?q= search, ?category=
 router.get('/api/tools', async (req, res) => {
@@ -22,22 +23,39 @@ router.get('/api/tools', async (req, res) => {
   }
 });
 
-// POST /api/tools - add a new tool/app
-router.post('/api/tools', async (req, res) => {
+// POST /api/tools - add a new tool/app. Must be a registered, logged-in user.
+router.post('/api/tools', requireAuth, async (req, res) => {
   try {
-    const { name, link, category, size, ownerNumber, description } = req.body;
-
-    if (!name || !link) {
-      return res.status(400).json({ error: 'Name and link are required.' });
-    }
-
-    const tool = await Tool.create({
+    const {
       name,
-      link,
+      coverPhoto,
+      previewLinks,
+      downloadLink,
       category,
       size,
       ownerNumber,
       description,
+    } = req.body;
+
+    if (!name || !downloadLink) {
+      return res.status(400).json({ error: 'Name and download link are required.' });
+    }
+
+    const cleanPreviews = Array.isArray(previewLinks)
+      ? previewLinks.map((l) => (l || '').trim()).filter(Boolean).slice(0, 8)
+      : [];
+
+    const tool = await Tool.create({
+      name,
+      coverPhoto: (coverPhoto || '').trim(),
+      previewLinks: cleanPreviews,
+      downloadLink,
+      category,
+      size,
+      ownerNumber,
+      description,
+      ownerUser: req.session.userId,
+      ownerUsername: req.session.username || '',
     });
 
     res.status(201).json(tool);
@@ -46,8 +64,8 @@ router.post('/api/tools', async (req, res) => {
   }
 });
 
-// DELETE /api/tools/:id
-router.delete('/api/tools/:id', async (req, res) => {
+// DELETE /api/tools/:id - admin only, from the site manager
+router.delete('/api/tools/:id', requireAdmin, async (req, res) => {
   try {
     await Tool.findByIdAndDelete(req.params.id);
     res.json({ success: true });

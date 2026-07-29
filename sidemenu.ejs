@@ -1,0 +1,49 @@
+<div class="announce-banner" id="announceBanner" style="display:none"></div>
+
+<div class="side-overlay" id="sideOverlay"></div>
+<aside class="side-menu" id="sideMenu">
+  <div class="side-menu-head">
+    <div class="brand-name">Wave<span>Hub</span></div>
+    <button class="side-close" id="sideCloseBtn" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <div class="side-user" id="sideUserBox">
+    <a href="/login" class="btn btn-ghost side-auth-link" id="sideLoginLink"><i class="fa-solid fa-right-to-bracket"></i> Log in</a>
+    <a href="/register" class="btn btn-primary side-auth-link" id="sideRegisterLink"><i class="fa-solid fa-user-plus"></i> Register</a>
+  </div>
+
+  <nav class="side-links">
+    <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="/tools"><i class="fa-solid fa-layer-group"></i> Tools &amp; Apps</a>
+    <a href="/tools/add"><i class="fa-solid fa-plus"></i> Upload a tool</a>
+    <a href="/referrals"><i class="fa-solid fa-people-group"></i> Referral Leaderboard</a>
+    <a href="/whatsapp-groups"><i class="fa-brands fa-whatsapp"></i> WhatsApp Groups</a>
+    <a href="/vcf"><i class="fa-solid fa-address-book"></i> My VCF Panels</a>
+    <a href="/vcf/explore"><i class="fa-solid fa-compass"></i> Explore VCF Panels</a>
+    <a href="/history"><i class="fa-solid fa-clock-rotate-left"></i> Download History</a>
+  </nav>
+
+  <button class="side-logout" id="sideLogoutBtn" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+
+  <div class="side-footer">
+    <span class="mrxonly" id="mrxonlyBtn">mrxonly</span>
+  </div>
+</aside>
+
+<div class="modal-overlay" id="adminModalOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <i class="fa-solid fa-lock"></i>
+      <div>Access required</div>
+    </div>
+    <p class="page-sub" style="margin:6px 0 14px;">Enter the site manager password to continue.</p>
+    <input type="password" id="adminPasswordInput" class="modal-input" placeholder="Password">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="adminModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="adminModalSubmit">Unlock</button>
+    </div>
+    <div class="status-msg" id="adminModalStatus"></div>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>

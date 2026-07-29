@@ -47,9 +47,18 @@ function render() {
   emptyState.style.display = 'none';
 
   toolList.innerHTML = filtered
-    .map(
-      (t) => `
+    .map((t) => {
+      const previews = (t.previewLinks || [])
+        .slice(0, 8)
+        .map(
+          (p, i) =>
+            `<a class="btn btn-ghost" href="${escapeHtml(p)}" target="_blank" rel="noopener noreferrer" style="padding:6px 10px;font-size:0.76rem;">Preview ${i + 1}</a>`
+        )
+        .join('');
+
+      return `
     <div class="tool-card">
+      ${t.coverPhoto ? `<img src="${escapeHtml(t.coverPhoto)}" alt="${escapeHtml(t.name)}" style="width:100%;border-radius:12px;margin-bottom:10px;max-height:160px;object-fit:cover;">` : ''}
       <div class="tool-card-top">
         <div class="tool-name">${escapeHtml(t.name)}</div>
         <span class="chip">${escapeHtml(t.category || 'Other')}</span>
@@ -58,15 +67,17 @@ function render() {
       <div class="tool-meta">
         ${t.size ? `<span><i class="fa-solid fa-database"></i> ${escapeHtml(t.size)}</span>` : ''}
         ${t.ownerNumber ? `<span><i class="fa-solid fa-phone"></i> ${escapeHtml(t.ownerNumber)}</span>` : ''}
+        ${t.ownerUsername ? `<span><i class="fa-solid fa-user"></i> ${escapeHtml(t.ownerUsername)}</span>` : ''}
       </div>
+      ${previews ? `<div class="result-actions" style="flex-wrap:wrap;margin-bottom:8px;">${previews}</div>` : ''}
       <div class="tool-card-actions">
-        <a class="btn btn-primary" href="${escapeHtml(t.link)}" target="_blank" rel="noopener noreferrer">
-          <i class="fa-solid fa-up-right-from-square"></i> Open
+        <a class="btn btn-primary" href="${escapeHtml(t.downloadLink)}" target="_blank" rel="noopener noreferrer">
+          <i class="fa-solid fa-download"></i> Download
         </a>
       </div>
     </div>
-  `
-    )
+  `;
+    })
     .join('');
 }
 

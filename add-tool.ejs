@@ -13,7 +13,13 @@
       <div class="brand-name">Add a tool</div>
     </div>
 
-    <p class="page-sub">Share an app, tool, or link with the community.</p>
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Share an app, tool, or link with the community. You must be registered and logged in.</p>
+
+    <div class="status-msg show error" id="loginNotice" style="display:none">
+      You need to be logged in to upload a tool. <a href="/register" style="text-decoration:underline;">Register</a> or <a href="/login" style="text-decoration:underline;">log in</a> first.
+    </div>
 
     <form class="card" id="addToolForm">
       <div class="field">
@@ -22,8 +28,21 @@
       </div>
 
       <div class="field">
-        <label for="link">Link *</label>
-        <input type="url" id="link" name="link" placeholder="https://..." required>
+        <label for="coverPhoto">Cover photo (image link)</label>
+        <input type="url" id="coverPhoto" name="coverPhoto" placeholder="https://... (image URL)">
+      </div>
+
+      <div class="field">
+        <label>Preview links (up to 8)</label>
+        <div id="previewLinksWrap"></div>
+        <button type="button" class="btn btn-ghost" id="addPreviewBtn" style="width:auto;padding:8px 14px;font-size:0.8rem;">
+          <i class="fa-solid fa-plus"></i> Add preview link
+        </button>
+      </div>
+
+      <div class="field">
+        <label for="downloadLink">Download link *</label>
+        <input type="url" id="downloadLink" name="downloadLink" placeholder="https://..." required>
       </div>
 
       <div class="field-row">

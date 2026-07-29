@@ -7,11 +7,14 @@
 <body>
   <div class="shell">
     <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
       <div class="brand">
         <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
         <div class="brand-name">Wave<span>Hub</span></div>
       </div>
     </div>
+
+    <%- include('sidemenu') %>
 
     <h1 class="page-title">Recent downloads</h1>
     <p class="page-sub">Your last 30 downloads, newest first.</p>
