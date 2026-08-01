@@ -60,6 +60,18 @@ const toolSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    downloads: {
+      type: Number,
+      default: 0,
+    },
+    ratingSum: {
+      type: Number,
+      default: 0,
+    },
+    ratingCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

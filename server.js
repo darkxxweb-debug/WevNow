@@ -5,8 +5,6 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const connectDB = require('./db');
 
-const { logVisitor } = require('./middleware');
-
 const downloadRoutes = require('./download.routes');
 const toolsRoutes = require('./tools.routes');
 const authRoutes = require('./auth.routes');
@@ -38,8 +36,6 @@ app.use(
     },
   })
 );
-
-app.use(logVisitor);
 
 // Static assets (all files live flat in the project root, but are
 // still served under their original /css and /js URLs)

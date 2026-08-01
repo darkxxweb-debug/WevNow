@@ -4,22 +4,25 @@ const panelSub = document.getElementById('panelSub');
 const submitForm = document.getElementById('submitForm');
 const submitBtn = document.getElementById('submitBtn');
 const statusMsg = document.getElementById('statusMsg');
-const ownerBox = document.getElementById('ownerBox');
-const countInfo = document.getElementById('countInfo');
-const downloadLink = document.getElementById('downloadLink');
+const coverWrap = document.getElementById('coverWrap');
+const coverImg = document.getElementById('coverImg');
 const countrySelect = document.getElementById('country');
 const dialCodePrefix = document.getElementById('dialCodePrefix');
 const numberInput = document.getElementById('number');
 
 // ---------- country picker ----------
+function resetCountryToDefault() {
+  if (typeof COUNTRIES === 'undefined' || !countrySelect) return;
+  const defaultIndex = COUNTRIES.findIndex((c) => c.c === 'TZ');
+  if (defaultIndex >= 0) countrySelect.selectedIndex = defaultIndex;
+  dialCodePrefix.textContent = `+${countrySelect.value}`;
+}
+
 if (typeof COUNTRIES !== 'undefined' && countrySelect) {
   countrySelect.innerHTML = COUNTRIES.map(
     (c) => `<option value="${c.d}">${c.n} (+${c.d})</option>`
   ).join('');
-
-  const defaultIndex = COUNTRIES.findIndex((c) => c.c === 'TZ');
-  if (defaultIndex >= 0) countrySelect.selectedIndex = defaultIndex;
-  dialCodePrefix.textContent = `+${countrySelect.value}`;
+  resetCountryToDefault();
 
   countrySelect.addEventListener('change', () => {
     dialCodePrefix.textContent = `+${countrySelect.value}`;
@@ -35,10 +38,9 @@ async function loadPanel() {
     panelTitle.textContent = data.title;
     panelSub.textContent = `Add your number below to join "${data.title}".`;
 
-    if (data.isOwner || data.isAdmin) {
-      countInfo.textContent = `${data.count} number${data.count === 1 ? '' : 's'} saved so far`;
-      downloadLink.href = `/api/vcf/${slug}/download`;
-      ownerBox.style.display = 'block';
+    if (data.coverPhoto) {
+      coverImg.src = data.coverPhoto;
+      coverWrap.style.display = 'block';
     }
 
     if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
@@ -74,11 +76,7 @@ submitForm.addEventListener('submit', async (e) => {
     statusMsg.textContent = 'Saved! Thank you for joining.';
     statusMsg.className = 'status-msg show info';
     submitForm.reset();
-    if (typeof COUNTRIES !== 'undefined') {
-      const defaultIndex = COUNTRIES.findIndex((c) => c.c === 'TZ');
-      if (defaultIndex >= 0) countrySelect.selectedIndex = defaultIndex;
-      dialCodePrefix.textContent = `+${countrySelect.value}`;
-    }
+    resetCountryToDefault();
   } catch (err) {
     statusMsg.textContent = err.message;
     statusMsg.className = 'status-msg show error';

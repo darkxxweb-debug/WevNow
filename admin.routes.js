@@ -5,7 +5,6 @@ const User = require('./User.model');
 const Tool = require('./Tool.model');
 const WhatsappGroup = require('./WhatsappGroup.model');
 const Announcement = require('./Announcement.model');
-const Visitor = require('./Visitor.model');
 const VcfPanel = require('./VcfPanel.model');
 const { requireAdmin } = require('./middleware');
 
@@ -61,27 +60,15 @@ router.use('/api/admin', requireAdmin);
 // stats overview
 router.get('/api/admin/stats', async (req, res) => {
   try {
-    const [users, tools, groups, visitors, vcfPanels] = await Promise.all([
+    const [users, tools, groups, vcfPanels] = await Promise.all([
       User.countDocuments(),
       Tool.countDocuments(),
       WhatsappGroup.countDocuments(),
-      Visitor.countDocuments(),
       VcfPanel.countDocuments(),
     ]);
-    res.json({ users, tools, groups, visitors, vcfPanels });
+    res.json({ users, tools, groups, vcfPanels });
   } catch (err) {
     res.status(500).json({ error: 'Could not load stats.' });
-  }
-});
-
-// visitors
-router.get('/api/admin/visitors', async (req, res) => {
-  try {
-    const total = await Visitor.countDocuments();
-    const recent = await Visitor.find().sort({ createdAt: -1 }).limit(50);
-    res.json({ total, recent });
-  } catch (err) {
-    res.status(500).json({ error: 'Could not load visitors.' });
   }
 });
 
@@ -136,19 +123,20 @@ router.delete('/api/admin/announcements/:id', async (req, res) => {
   }
 });
 
-// vcf admin panels
+// ---------- vcf oversight: every panel on the site (user + admin created) ----------
 router.get('/api/admin/vcf', async (req, res) => {
   try {
-    const panels = await VcfPanel.find({ type: 'admin' }).sort({ createdAt: -1 });
+    const panels = await VcfPanel.find().sort({ createdAt: -1 });
     res.json(panels);
   } catch (err) {
     res.status(500).json({ error: 'Could not load VCF panels.' });
   }
 });
 
+// admin can also create its own promotional panels the same way a user would
 router.post('/api/admin/vcf', async (req, res) => {
   try {
-    const { title, targetCount, durationHours, isPublic } = req.body;
+    const { title, coverPhoto, targetCount, durationHours, isPublic } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required.' });
 
     const slug = await makeSlug();
@@ -158,6 +146,7 @@ router.post('/api/admin/vcf', async (req, res) => {
     const panel = await VcfPanel.create({
       slug,
       title: title.trim(),
+      coverPhoto: (coverPhoto || '').trim(),
       type: 'admin',
       ownerUsername: 'admin',
       targetCount: Number(targetCount) || 0,
@@ -172,41 +161,8 @@ router.post('/api/admin/vcf', async (req, res) => {
   }
 });
 
-// push: finalize a panel once it has reached its target contact count
-router.post('/api/admin/vcf/:slug/push', async (req, res) => {
-  try {
-    const panel = await VcfPanel.findOne({ slug: req.params.slug, type: 'admin' });
-    if (!panel) return res.status(404).json({ error: 'Panel not found.' });
-
-    if (panel.targetCount > 0 && panel.contacts.length < panel.targetCount) {
-      return res.status(400).json({
-        error: `Not enough numbers yet: ${panel.contacts.length}/${panel.targetCount}.`,
-      });
-    }
-
-    panel.pushed = true;
-    panel.pushedAt = new Date();
-    await panel.save();
-
-    res.json(panel);
-  } catch (err) {
-    res.status(400).json({ error: 'Could not push this panel.' });
-  }
-});
-
-router.post('/api/admin/vcf/:slug/visibility', async (req, res) => {
-  try {
-    const { isPublic } = req.body;
-    const panel = await VcfPanel.findOneAndUpdate(
-      { slug: req.params.slug, type: 'admin' },
-      { isPublic: !!isPublic },
-      { new: true }
-    );
-    if (!panel) return res.status(404).json({ error: 'Panel not found.' });
-    res.json(panel);
-  } catch (err) {
-    res.status(400).json({ error: 'Could not update this panel.' });
-  }
-});
+// Push, lock, visibility, download, and delete for any panel (including
+// user-owned ones) are handled by the generalized routes in vcf.routes.js -
+// the admin session automatically passes their ownerOrAdmin() check there.
 
 module.exports = router;

@@ -4,19 +4,20 @@
   <title>WaveHub · VCF Panel</title>
   <%- include('head') %>
 </head>
-<body data-slug="<%= slug %>">
-  <div class="shell">
-    <div class="topbar">
-      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-      <div class="brand-name" id="panelTitle">VCF Panel</div>
-      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
-        <i class="fa-solid fa-bell"></i>
-        <span class="notif-dot" id="notifDot" style="display:none"></span>
-      </button>
+<body data-slug="<%= slug %>" class="standalone-body">
+  <div class="shell standalone-shell">
+    <div class="standalone-header">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </div>
     </div>
 
-    <%- include('sidemenu') %>
+    <div class="vcf-cover-wrap" id="coverWrap" style="display:none">
+      <img id="coverImg" src="" alt="">
+    </div>
 
+    <h1 class="page-title" id="panelTitle">VCF Panel</h1>
     <p class="page-sub" id="panelSub">Add your number to this contact panel.</p>
 
     <form class="card" id="submitForm">
@@ -44,15 +45,11 @@
       <div class="status-msg" id="statusMsg"></div>
     </form>
 
-    <div class="referral-box" id="ownerBox" style="display:none;margin-top:16px;">
-      <div class="tool-name" id="countInfo"></div>
-      <div class="vcf-actions" style="margin-top:10px;">
-        <a class="btn btn-teal" id="downloadLink" href="#"><i class="fa-solid fa-download"></i> Download .vcf</a>
-      </div>
+    <div class="standalone-footer">
+      <span>All Rights are reserved | DarkX-Ultra Tech 2026</span>
     </div>
   </div>
 
-  <%- include('bottomnav') %>
   <script src="/js/countries.js"></script>
   <script src="/js/vcf-panel.js"></script>
 </body>

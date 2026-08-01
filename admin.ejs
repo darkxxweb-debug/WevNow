@@ -32,8 +32,7 @@
         <div class="admin-tab" data-tab="groups">WhatsApp Groups</div>
         <div class="admin-tab" data-tab="users">Users</div>
         <div class="admin-tab" data-tab="announcements">Announcements</div>
-        <div class="admin-tab" data-tab="visitors">Visitors</div>
-        <div class="admin-tab" data-tab="vcf">VCF Admin</div>
+        <div class="admin-tab" data-tab="vcf">VCF Panels</div>
       </div>
 
       <!-- Tools -->
@@ -56,7 +55,7 @@
         <form class="card" id="announcementForm" style="margin-bottom:16px;">
           <div class="field">
             <label for="announcementMsg">Post a new announcement</label>
-            <textarea id="announcementMsg" placeholder="Shown as a banner across the site..."></textarea>
+            <textarea id="announcementMsg" placeholder="Shown in the notification bell..."></textarea>
           </div>
           <button class="btn btn-primary" type="submit"><i class="fa-solid fa-bullhorn"></i> Post announcement</button>
           <div class="status-msg" id="announcementStatus"></div>
@@ -64,21 +63,16 @@
         <div id="announcementsAdminList"></div>
       </div>
 
-      <!-- Visitors -->
-      <div class="admin-panel-section" id="section-visitors">
-        <div class="admin-stat" style="margin-bottom:16px;">
-          <div class="admin-stat-num" id="visitorTotal">0</div>
-          <div class="admin-stat-label">total page views</div>
-        </div>
-        <div id="visitorsAdminList"></div>
-      </div>
-
-      <!-- VCF Admin -->
+      <!-- VCF Panels (oversight of every panel on the site + admin's own) -->
       <div class="admin-panel-section" id="section-vcf">
         <form class="card" id="vcfAdminForm" style="margin-bottom:16px;">
           <div class="field">
             <label for="vcfTitle">Panel title *</label>
             <input type="text" id="vcfTitle" placeholder="e.g. VIP contacts" required>
+          </div>
+          <div class="field">
+            <label for="vcfCover">Cover photo (image link, optional)</label>
+            <input type="url" id="vcfCover" placeholder="https://... (image URL)">
           </div>
           <div class="field-row">
             <div class="field">
@@ -101,6 +95,7 @@
         <div id="vcfAdminList"></div>
       </div>
     </div>
+    <footer class="site-footer">All Rights are reserved | DarkX-Ultra Tech 2026</footer>
   </div>
 
   <%- include('bottomnav') %>

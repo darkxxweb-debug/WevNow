@@ -55,7 +55,7 @@ async function loadStats() {
       <div class="admin-stat"><div class="admin-stat-num">${s.tools}</div><div class="admin-stat-label">tools</div></div>
       <div class="admin-stat"><div class="admin-stat-num">${s.users}</div><div class="admin-stat-label">users</div></div>
       <div class="admin-stat"><div class="admin-stat-num">${s.groups}</div><div class="admin-stat-label">WhatsApp groups</div></div>
-      <div class="admin-stat"><div class="admin-stat-num">${s.visitors}</div><div class="admin-stat-label">page views</div></div>
+      <div class="admin-stat"><div class="admin-stat-num">${s.vcfPanels}</div><div class="admin-stat-label">VCF panels</div></div>
     `;
   } catch (err) {
     // silent
@@ -241,32 +241,7 @@ announcementForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ---------- visitors ----------
-async function loadVisitorsAdmin() {
-  const list = document.getElementById('visitorsAdminList');
-  const totalEl = document.getElementById('visitorTotal');
-  try {
-    const res = await fetch('/api/admin/visitors');
-    const data = await res.json();
-    totalEl.textContent = data.total;
-    list.innerHTML = data.recent
-      .map(
-        (v) => `
-      <div class="admin-row">
-        <div class="admin-row-info">
-          <div class="admin-row-title">${escapeHtml(v.path || '/')}</div>
-          <div class="admin-row-sub">${escapeHtml(v.ip || 'unknown ip')} &middot; ${timeAgo(v.createdAt)}</div>
-        </div>
-      </div>
-    `
-      )
-      .join('');
-  } catch (err) {
-    list.innerHTML = '';
-  }
-}
-
-// ---------- vcf admin ----------
+// ---------- vcf panels (every panel on the site) ----------
 const vcfAdminForm = document.getElementById('vcfAdminForm');
 const vcfAdminStatus = document.getElementById('vcfAdminStatus');
 
@@ -276,7 +251,7 @@ async function loadVcfAdmin() {
     const res = await fetch('/api/admin/vcf');
     const panels = await res.json();
     if (!panels.length) {
-      list.innerHTML = '<div class="empty-state"><div class="glyph"><i class="fa-solid fa-address-book"></i></div><div>No admin VCF panels yet.</div></div>';
+      list.innerHTML = '<div class="empty-state"><div class="glyph"><i class="fa-solid fa-address-book"></i></div><div>No VCF panels yet.</div></div>';
       return;
     }
     list.innerHTML = panels
@@ -285,17 +260,22 @@ async function loadVcfAdmin() {
         const progress = p.targetCount > 0 ? `${p.contacts.length}/${p.targetCount}` : `${p.contacts.length}`;
         return `
       <div class="vcf-card">
+        ${p.coverPhoto ? `<img src="${escapeHtml(p.coverPhoto)}" alt="" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:120px;object-fit:cover;">` : ''}
         <div class="vcf-card-top">
           <div class="vcf-title">${escapeHtml(p.title)}</div>
           <span class="chip">${escapeHtml(progress)}</span>
         </div>
         <div class="vcf-meta">
-          ${p.isPublic ? '<i class="fa-solid fa-globe"></i> Public' : '<i class="fa-solid fa-lock"></i> Private'}
-          &middot; ${p.pushed ? '<span style="color:var(--teal);">pushed</span>' : 'not pushed'}
-          &middot; ${escapeHtml(link)}
+          by ${escapeHtml(p.ownerUsername || 'unknown')} (${p.type})
+          &middot; ${p.isPublic ? '<i class="fa-solid fa-globe"></i> Public' : '<i class="fa-solid fa-lock"></i> Private'}
+          &middot; ${p.downloadEnabled ? '<span style="color:var(--teal);">download enabled</span>' : 'download locked'}
         </div>
+        <div class="vcf-meta">${escapeHtml(link)}</div>
         <div class="vcf-actions">
-          <button class="btn btn-ghost pushBtn" data-slug="${p.slug}"><i class="fa-solid fa-paper-plane"></i> Push</button>
+          ${p.downloadEnabled
+            ? `<button class="btn btn-ghost lockBtn" data-slug="${p.slug}"><i class="fa-solid fa-lock"></i> Lock</button>`
+            : `<button class="btn btn-ghost pushBtn" data-slug="${p.slug}"><i class="fa-solid fa-unlock"></i> Enable download</button>`
+          }
           <button class="btn btn-ghost visBtn" data-slug="${p.slug}" data-public="${p.isPublic}">
             <i class="fa-solid ${p.isPublic ? 'fa-eye-slash' : 'fa-eye'}"></i> ${p.isPublic ? 'Make private' : 'Make public'}
           </button>
@@ -310,7 +290,7 @@ async function loadVcfAdmin() {
     list.querySelectorAll('.pushBtn').forEach((btn) => {
       btn.addEventListener('click', async () => {
         try {
-          const res = await fetch(`/api/admin/vcf/${btn.dataset.slug}/push`, { method: 'POST' });
+          const res = await fetch(`/api/vcf/${btn.dataset.slug}/push`, { method: 'POST' });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error);
           loadVcfAdmin();
@@ -320,10 +300,17 @@ async function loadVcfAdmin() {
       });
     });
 
+    list.querySelectorAll('.lockBtn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await fetch(`/api/vcf/${btn.dataset.slug}/lock`, { method: 'POST' });
+        loadVcfAdmin();
+      });
+    });
+
     list.querySelectorAll('.visBtn').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const isPublic = btn.dataset.public === 'true';
-        await fetch(`/api/admin/vcf/${btn.dataset.slug}/visibility`, {
+        await fetch(`/api/vcf/${btn.dataset.slug}/visibility`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isPublic: !isPublic }),
@@ -349,6 +336,7 @@ vcfAdminForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
     title: document.getElementById('vcfTitle').value.trim(),
+    coverPhoto: document.getElementById('vcfCover').value.trim(),
     targetCount: document.getElementById('vcfTarget').value,
     durationHours: document.getElementById('vcfDuration').value,
     isPublic: document.getElementById('vcfPublic').checked,
@@ -381,6 +369,5 @@ vcfAdminForm.addEventListener('submit', async (e) => {
   loadGroupsAdmin();
   loadUsersAdmin();
   loadAnnouncementsAdmin();
-  loadVisitorsAdmin();
   loadVcfAdmin();
 })();

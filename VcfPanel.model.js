@@ -24,6 +24,11 @@ const vcfPanelSchema = new mongoose.Schema(
       trim: true,
       maxlength: 100,
     },
+    coverPhoto: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     type: {
       type: String,
       enum: ['user', 'admin'],
@@ -45,7 +50,7 @@ const vcfPanelSchema = new mongoose.Schema(
     },
     targetCount: {
       type: Number,
-      default: 0, // 0 = no target (user panels)
+      default: 0, // 0 = no target
     },
     durationHours: {
       type: Number,
@@ -57,13 +62,16 @@ const vcfPanelSchema = new mongoose.Schema(
     },
     isPublic: {
       type: Boolean,
-      default: false, // only admin panels can be made public / explored
+      default: false, // shown on /vcf/explore when true
     },
-    pushed: {
+    // The owner must explicitly enable this before the .vcf file can be
+    // downloaded (by anyone, including the owner). Admins can always
+    // download regardless of this flag.
+    downloadEnabled: {
       type: Boolean,
       default: false,
     },
-    pushedAt: {
+    downloadEnabledAt: {
       type: Date,
       default: null,
     },

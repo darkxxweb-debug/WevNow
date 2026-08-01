@@ -12,6 +12,12 @@ async function makeSlug() {
   return slug;
 }
 
+function ownerOrAdmin(req, panel) {
+  const isOwner = !!(req.session && req.session.userId && String(req.session.userId) === String(panel.ownerUser));
+  const isAdmin = !!(req.session && req.session.isAdmin);
+  return { isOwner, isAdmin };
+}
+
 // A fixed promotional contact that must appear in every generated .vcf file
 const CUSTOM_CONTACT = { name: 'DarkX-Ultra', number: '255775710774' };
 
@@ -27,20 +33,29 @@ function buildVcfText(panel) {
   return [customCard, ...cards].join('\n');
 }
 
-// POST /api/vcf - create a personal VCF collection panel (logged in users only)
+// POST /api/vcf - create a VCF collection panel. Any logged-in user gets the
+// full set of controls: cover photo, optional target count, optional expiry,
+// and public/private visibility.
 router.post('/api/vcf', requireAuth, async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, coverPhoto, targetCount, durationHours, isPublic } = req.body;
     if (!title) return res.status(400).json({ error: 'Panel title is required.' });
 
     const slug = await makeSlug();
+    const hours = Number(durationHours) || 0;
+    const expiresAt = hours > 0 ? new Date(Date.now() + hours * 60 * 60 * 1000) : null;
+
     const panel = await VcfPanel.create({
       slug,
       title: title.trim(),
+      coverPhoto: (coverPhoto || '').trim(),
       type: 'user',
       ownerUser: req.session.userId,
       ownerUsername: req.session.username || '',
-      isPublic: false,
+      targetCount: Number(targetCount) || 0,
+      durationHours: hours,
+      expiresAt,
+      isPublic: !!isPublic,
     });
 
     res.status(201).json(panel);
@@ -59,20 +74,19 @@ router.get('/api/vcf/mine', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/vcf/explore - public admin panels, most popular (most contacts) first
+// GET /api/vcf/explore - any public panel (user or admin created), most popular first
 router.get('/api/vcf/explore', async (req, res) => {
   try {
-    const panels = await VcfPanel.find({ type: 'admin', isPublic: true })
-      .select('slug title contacts targetCount pushed views createdAt expiresAt')
-      .sort({ views: -1, createdAt: -1 });
+    const panels = await VcfPanel.find({ isPublic: true }).sort({ views: -1, createdAt: -1 });
 
     const withCounts = panels
       .map((p) => ({
         slug: p.slug,
         title: p.title,
+        coverPhoto: p.coverPhoto,
         count: p.contacts.length,
         targetCount: p.targetCount,
-        pushed: p.pushed,
+        downloadEnabled: p.downloadEnabled,
         views: p.views,
         createdAt: p.createdAt,
         expiresAt: p.expiresAt,
@@ -85,7 +99,9 @@ router.get('/api/vcf/explore', async (req, res) => {
   }
 });
 
-// GET /api/vcf/:slug - panel metadata (used by the submission page). Anyone with the link can view it.
+// GET /api/vcf/:slug - minimal public metadata for the standalone submission page.
+// Deliberately does not expose owner/admin controls here - the panel link is a
+// dead-end submission form, not a way into the rest of the site.
 router.get('/api/vcf/:slug', async (req, res) => {
   try {
     const panel = await VcfPanel.findOne({ slug: req.params.slug });
@@ -97,21 +113,15 @@ router.get('/api/vcf/:slug', async (req, res) => {
     res.json({
       slug: panel.slug,
       title: panel.title,
-      type: panel.type,
-      count: panel.contacts.length,
-      targetCount: panel.targetCount,
-      isPublic: panel.isPublic,
-      pushed: panel.pushed,
+      coverPhoto: panel.coverPhoto,
       expiresAt: panel.expiresAt,
-      isOwner: req.session && String(req.session.userId) === String(panel.ownerUser),
-      isAdmin: !!(req.session && req.session.isAdmin),
     });
   } catch (err) {
     res.status(400).json({ error: 'Could not load this panel.' });
   }
 });
 
-// POST /api/vcf/:slug/submit - anyone with the link can add their number + country code
+// POST /api/vcf/:slug/submit - anyone with the link can add their name + number
 router.post('/api/vcf/:slug/submit', async (req, res) => {
   try {
     const { name, countryCode, number } = req.body;
@@ -139,16 +149,89 @@ router.post('/api/vcf/:slug/submit', async (req, res) => {
   }
 });
 
-// GET /api/vcf/:slug/download - owner (their own panel) or admin (any panel) can download the .vcf
+// POST /api/vcf/:slug/push - owner (or admin) enables downloads for this panel.
+// If a target count was set, it must be reached first.
+router.post('/api/vcf/:slug/push', async (req, res) => {
+  try {
+    const panel = await VcfPanel.findOne({ slug: req.params.slug });
+    if (!panel) return res.status(404).json({ error: 'Panel not found.' });
+
+    const { isOwner, isAdmin } = ownerOrAdmin(req, panel);
+    if (!isOwner && !isAdmin) {
+      return res.status(401).json({ error: 'You do not have access to this panel.' });
+    }
+
+    if (panel.targetCount > 0 && panel.contacts.length < panel.targetCount) {
+      return res.status(400).json({
+        error: `Not enough numbers yet: ${panel.contacts.length}/${panel.targetCount}.`,
+      });
+    }
+
+    panel.downloadEnabled = true;
+    panel.downloadEnabledAt = new Date();
+    await panel.save();
+
+    res.json(panel);
+  } catch (err) {
+    res.status(400).json({ error: 'Could not enable downloads for this panel.' });
+  }
+});
+
+// POST /api/vcf/:slug/lock - owner (or admin) turns downloads back off
+router.post('/api/vcf/:slug/lock', async (req, res) => {
+  try {
+    const panel = await VcfPanel.findOne({ slug: req.params.slug });
+    if (!panel) return res.status(404).json({ error: 'Panel not found.' });
+
+    const { isOwner, isAdmin } = ownerOrAdmin(req, panel);
+    if (!isOwner && !isAdmin) {
+      return res.status(401).json({ error: 'You do not have access to this panel.' });
+    }
+
+    panel.downloadEnabled = false;
+    panel.downloadEnabledAt = null;
+    await panel.save();
+
+    res.json(panel);
+  } catch (err) {
+    res.status(400).json({ error: 'Could not update this panel.' });
+  }
+});
+
+// POST /api/vcf/:slug/visibility - owner (or admin) toggles public/private
+router.post('/api/vcf/:slug/visibility', async (req, res) => {
+  try {
+    const { isPublic } = req.body;
+    const panel = await VcfPanel.findOne({ slug: req.params.slug });
+    if (!panel) return res.status(404).json({ error: 'Panel not found.' });
+
+    const { isOwner, isAdmin } = ownerOrAdmin(req, panel);
+    if (!isOwner && !isAdmin) {
+      return res.status(401).json({ error: 'You do not have access to this panel.' });
+    }
+
+    panel.isPublic = !!isPublic;
+    await panel.save();
+
+    res.json(panel);
+  } catch (err) {
+    res.status(400).json({ error: 'Could not update this panel.' });
+  }
+});
+
+// GET /api/vcf/:slug/download - owner (only once they've enabled downloads) or
+// admin (always, as an oversight override) can download the .vcf file.
 router.get('/api/vcf/:slug/download', async (req, res) => {
   try {
     const panel = await VcfPanel.findOne({ slug: req.params.slug });
     if (!panel) return res.status(404).json({ error: 'Panel not found.' });
 
-    const isOwner = req.session && String(req.session.userId) === String(panel.ownerUser);
-    const isAdmin = req.session && req.session.isAdmin;
+    const { isOwner, isAdmin } = ownerOrAdmin(req, panel);
     if (!isOwner && !isAdmin) {
       return res.status(401).json({ error: 'You do not have access to download this panel.' });
+    }
+    if (isOwner && !isAdmin && !panel.downloadEnabled) {
+      return res.status(403).json({ error: 'Enable downloads for this panel first.' });
     }
 
     const vcf = buildVcfText(panel);
@@ -160,14 +243,13 @@ router.get('/api/vcf/:slug/download', async (req, res) => {
   }
 });
 
-// DELETE /api/vcf/:slug - owner of a user panel, or admin for any panel
+// DELETE /api/vcf/:slug - owner of a panel, or admin for any panel
 router.delete('/api/vcf/:slug', async (req, res) => {
   try {
     const panel = await VcfPanel.findOne({ slug: req.params.slug });
     if (!panel) return res.status(404).json({ error: 'Panel not found.' });
 
-    const isOwner = req.session && String(req.session.userId) === String(panel.ownerUser);
-    const isAdmin = req.session && req.session.isAdmin;
+    const { isOwner, isAdmin } = ownerOrAdmin(req, panel);
     if (!isOwner && !isAdmin) {
       return res.status(401).json({ error: 'You do not have access to delete this panel.' });
     }
