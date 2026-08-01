@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Apps</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <h1 class="page-title">Apps</h1>
+    <p class="page-sub">Shared by the community. Tap the plus button to upload your own (registered users only), or tap any app to see its full details and comments.</p>
+
+    <div class="store-tabs" id="storeTabs">
+      <div class="store-tab active" data-mode="new"><i class="fa-solid fa-star"></i> All apps</div>
+      <div class="store-tab" data-mode="top"><i class="fa-solid fa-fire"></i> Top downloads</div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <input type="text" id="searchInput" placeholder="Search apps...">
+    </div>
+
+    <div class="chip-row" id="categoryRow">
+      <span class="chip active" data-cat="All">All</span>
+    </div>
+
+    <div class="tool-list" id="toolList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-box-open"></i></div>
+      <div>No apps yet. Be the first to add one.</div>
+    </div>
+    <footer class="site-footer">All Rights are reserved | DarkX-Ultra Tech 2026</footer>
+  </div>
+
+  <!-- App detail panel: opens full-screen when an app row is tapped -->
+  <div class="app-detail-overlay" id="appDetailOverlay">
+    <div class="app-detail-panel" id="appDetailPanel">
+      <div class="app-detail-head">
+        <button class="side-close" id="appDetailClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="app-detail-body" id="appDetailBody">
+        <!-- filled in by apps.client.js -->
+      </div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/apps.js"></script>
+</body>
+</html>

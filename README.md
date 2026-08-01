@@ -1,19 +1,20 @@
 # WaveHub
 
-Music/video downloader + community tools directory (Play Store style) + referral business + WhatsApp group directory + VCF contact panels. Node.js/Express backend, MongoDB (Mongoose) database, EJS views, vanilla JS frontend, mobile-style bottom navigation + side menu.
+Music/video downloader + community app directory (Play Store style) + referral business + WhatsApp group directory + VCF contact panels. Node.js/Express backend, MongoDB (Mongoose) database, EJS views, vanilla JS frontend, mobile-style bottom navigation + side menu.
 
 ## Features
 
 - **Home** — paste a link from YouTube, TikTok, Instagram, or Facebook. Every result shows an inline preview (video/image player) and downloads through a server-side proxy so the file actually saves instead of just opening in the browser.
-- **Tools (Play Store style)** — apps are listed as rows (icon, name, category, star rating, download count, Install button), with **All apps** / **Top downloads** tabs and search/category filtering. Tapping a row expands it to show the description, preview links, and a 5-star rating widget. Every real download increments that tool's download counter.
-- **Upload a tool** — only registered, logged-in users can upload a new tool/app. The form includes a cover photo, up to 8 preview links, and a download link.
+- **Apps (Play Store style)** — apps are listed as rows (icon, name, category, star rating, download count, Install button), with **All apps** / **Top downloads** tabs and search/category filtering. Tapping a row opens a full detail panel with the cover photo, description, preview links, a 5-star rating widget, and a **comments** section where any logged-in user can read and post comments. Every real download increments that app's download counter.
+- **Upload an app** — only registered, logged-in users can upload a new app. The form includes a cover photo, up to 8 preview links, and a download link.
+- **My Apps** — `/apps/mine` lets whoever uploaded an app manage it afterwards: edit any of its details or delete it entirely. Nobody else (other than the admin) can edit or delete someone else's app.
 - **Register / Log in** — simple username + password accounts, sessions stored in MongoDB.
 - **Referral business** — every registered user gets a personal referral link (`/register?ref=CODE`). A leaderboard at `/referrals` ranks users by how many people they referred, most on top.
 - **WhatsApp groups** — `/whatsapp-groups` lets logged-in users submit group invite links. Any link starting with `https://chat.whatsapp.com/` is accepted (the code after it can be anything). Most-joined groups float to the top. Admin can delete any group from the site manager.
 - **VCF panels** — `/vcf` lets any logged-in user create a full-featured contact-collection panel: title, optional cover photo, optional target contact count, optional expiry duration, and public/private visibility — the same controls the admin has. Each panel gets its own **standalone** shareable link (`/vcf/:slug`) with no site navigation at all (no menu, no bottom nav, no way to browse the rest of the site) — it's just a form where visitors submit their name, country, and phone number. The owner enables downloads with an explicit "Enable download" action from their `/vcf` dashboard; nobody (not even the owner) can download the `.vcf` file before that, except the admin, who can always override. Every generated `.vcf` always includes one fixed contact: **DarkX-Ultra — 255775710774**.
 - **Explore VCF panels** — `/vcf/explore` lists any panel (user or admin-created) marked public, most popular first.
 - **Hidden site manager** — a low-visibility "mrxonly" link at the bottom of the side menu opens a password prompt (default `admin123`, set via `ADMIN_PASSWORD`). Once unlocked, `/admin` gives access to:
-  - Delete tools/apps
+  - Delete apps (any user's upload)
   - Delete WhatsApp groups
   - Delete users
   - Post/delete announcements (shown via the notification bell, top-right of every page)
@@ -85,12 +86,14 @@ Models
   VcfPanel.model.js          VCF contact panels (cover photo, target/expiry, public flag,
                               downloadEnabled gate, contacts with name+country+number)
   Announcement.model.js      notification-bell announcement
+  Comment.model.js           comments on an app's detail panel
   DownloadHistory.model.js   download history
 
 Routes
   auth.routes.js             register / login / logout / me
   users.routes.js            referral leaderboard
-  tools.routes.js             tools CRUD + download counter + star ratings (upload requires login)
+  apps.routes.js               app CRUD + ownership (edit/delete your own upload) + download counter
+                               + star ratings + comments (upload requires login)
   whatsapp.routes.js         WhatsApp group listing/add/click
   vcf.routes.js                VCF panel create/submit/push/lock/visibility/download/delete/explore
   download.routes.js          YouTube / TikTok / Instagram / Facebook extraction, streaming
@@ -99,14 +102,14 @@ Routes
                                announcements, VCF oversight)
 
 Views (EJS)
-  index.ejs, tools.ejs, add-tool.ejs, history.ejs, register.ejs, login.ejs,
+  index.ejs, apps.ejs, add-app.ejs, my-apps.ejs, history.ejs, register.ejs, login.ejs,
   referrals.ejs, whatsapp.ejs, vcf.ejs, vcf-explore.ejs, admin.ejs, 404.ejs
   vcf-panel.ejs               standalone VCF submission page (no site navigation)
   head.ejs, bottomnav.ejs, sidemenu.ejs   shared partials
 
 Client JS (served at /js/*.js by explicit routes in server.js so the
 browser-facing URLs stay unchanged even though the files sit flat in root)
-  download.client.js, tools.client.js, add-tool.client.js, history.client.js,
+  download.client.js, apps.client.js, add-app.client.js, my-apps.client.js, history.client.js,
   common.client.js, auth.client.js, referrals.client.js, whatsapp.client.js,
   vcf.client.js, vcf-panel.client.js, vcf-explore.client.js, admin.client.js,
   countries.client.js        country name + dial code list for the VCF number picker

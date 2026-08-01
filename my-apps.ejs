@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · My Apps</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <button class="menu-toggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand-name">My Apps</div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Manage the apps you've uploaded — edit their details or remove them.</p>
+
+    <div class="status-msg show error" id="loginNotice" style="display:none">
+      <a href="/register" style="text-decoration:underline;">Register</a> or <a href="/login" style="text-decoration:underline;">log in</a> to manage your apps.
+    </div>
+
+    <div id="myAppsList"></div>
+
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="glyph"><i class="fa-solid fa-box-open"></i></div>
+      <div>You haven't uploaded any apps yet.</div>
+      <br>
+      <a href="/apps/add" class="btn btn-primary" style="display:inline-flex;width:auto;padding:10px 20px;">Upload an app</a>
+    </div>
+    <footer class="site-footer">All Rights are reserved | DarkX-Ultra Tech 2026</footer>
+  </div>
+
+  <!-- Edit panel -->
+  <div class="app-detail-overlay" id="editOverlay">
+    <div class="app-detail-panel" id="editPanel">
+      <div class="app-detail-head">
+        <button class="side-close" id="editCloseBtn" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="app-detail-body">
+        <h2 class="detail-name" style="margin-bottom:14px;">Edit app</h2>
+        <form id="editForm">
+          <div class="field">
+            <label for="editName">Name *</label>
+            <input type="text" id="editName" required>
+          </div>
+          <div class="field">
+            <label for="editCoverPhoto">Cover photo (image link)</label>
+            <input type="url" id="editCoverPhoto">
+          </div>
+          <div class="field">
+            <label for="editDownloadLink">Download link *</label>
+            <input type="url" id="editDownloadLink" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="editSize">Size</label>
+              <input type="text" id="editSize">
+            </div>
+            <div class="field">
+              <label for="editCategory">Category</label>
+              <select id="editCategory">
+                <option>App</option>
+                <option>Website</option>
+                <option>Script</option>
+                <option>Bot</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="editOwnerNumber">Owner contact number</label>
+            <input type="tel" id="editOwnerNumber">
+          </div>
+          <div class="field">
+            <label for="editDescription">Description</label>
+            <textarea id="editDescription"></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit" id="editSubmitBtn">
+            <i class="fa-solid fa-check"></i> Save changes
+          </button>
+          <div class="status-msg" id="editStatus"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <%- include('bottomnav') %>
+  <script src="/js/my-apps.js"></script>
+</body>
+</html>

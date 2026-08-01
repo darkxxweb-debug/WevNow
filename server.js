@@ -6,7 +6,7 @@ const MongoStore = require('connect-mongo');
 const connectDB = require('./db');
 
 const downloadRoutes = require('./download.routes');
-const toolsRoutes = require('./tools.routes');
+const appsRoutes = require('./apps.routes');
 const authRoutes = require('./auth.routes');
 const usersRoutes = require('./users.routes');
 const whatsappRoutes = require('./whatsapp.routes');
@@ -41,8 +41,9 @@ app.use(
 // still served under their original /css and /js URLs)
 app.get('/css/style.css', (req, res) => res.sendFile(path.join(__dirname, 'style.css')));
 app.get('/js/download.js', (req, res) => res.sendFile(path.join(__dirname, 'download.client.js')));
-app.get('/js/tools.js', (req, res) => res.sendFile(path.join(__dirname, 'tools.client.js')));
-app.get('/js/add-tool.js', (req, res) => res.sendFile(path.join(__dirname, 'add-tool.client.js')));
+app.get('/js/apps.js', (req, res) => res.sendFile(path.join(__dirname, 'apps.client.js')));
+app.get('/js/add-app.js', (req, res) => res.sendFile(path.join(__dirname, 'add-app.client.js')));
+app.get('/js/my-apps.js', (req, res) => res.sendFile(path.join(__dirname, 'my-apps.client.js')));
 app.get('/js/history.js', (req, res) => res.sendFile(path.join(__dirname, 'history.client.js')));
 app.get('/js/common.js', (req, res) => res.sendFile(path.join(__dirname, 'common.client.js')));
 app.get('/js/auth.js', (req, res) => res.sendFile(path.join(__dirname, 'auth.client.js')));
@@ -56,8 +57,9 @@ app.get('/js/admin.js', (req, res) => res.sendFile(path.join(__dirname, 'admin.c
 
 // Pages
 app.get('/', (req, res) => res.render('index', { active: 'home' }));
-app.get('/tools', (req, res) => res.render('tools', { active: 'tools' }));
-app.get('/tools/add', (req, res) => res.render('add-tool', { active: 'add' }));
+app.get('/apps', (req, res) => res.render('apps', { active: 'apps' }));
+app.get('/apps/add', (req, res) => res.render('add-app', { active: 'add' }));
+app.get('/apps/mine', (req, res) => res.render('my-apps', { active: 'my-apps' }));
 app.get('/history', (req, res) => res.render('history', { active: 'history' }));
 app.get('/register', (req, res) => res.render('register', { active: 'register' }));
 app.get('/login', (req, res) => res.render('login', { active: 'login' }));
@@ -70,7 +72,7 @@ app.get('/admin', (req, res) => res.render('admin', { active: '' }));
 
 // API
 app.use(downloadRoutes);
-app.use(toolsRoutes);
+app.use(appsRoutes);
 app.use(authRoutes);
 app.use(usersRoutes);
 app.use(whatsappRoutes);

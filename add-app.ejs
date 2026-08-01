@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WaveHub · Add app</title>
+  <%- include('head') %>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <a href="/apps" class="btn-ghost btn" style="padding:10px 14px;">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div class="brand-name">Add an app</div>
+      <button class="notif-bell-btn" id="notifBell" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </button>
+    </div>
+
+    <%- include('sidemenu') %>
+
+    <p class="page-sub">Share an app or tool with the community. You must be registered and logged in.</p>
+
+    <div class="status-msg show error" id="loginNotice" style="display:none">
+      You need to be logged in to upload an app. <a href="/register" style="text-decoration:underline;">Register</a> or <a href="/login" style="text-decoration:underline;">log in</a> first.
+    </div>
+
+    <form class="card" id="addAppForm">
+      <div class="field">
+        <label for="name">Name *</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Audio Trimmer" required>
+      </div>
+
+      <div class="field">
+        <label for="coverPhoto">Cover photo (image link)</label>
+        <input type="url" id="coverPhoto" name="coverPhoto" placeholder="https://... (image URL)">
+      </div>
+
+      <div class="field">
+        <label>Preview links (up to 8)</label>
+        <div id="previewLinksWrap"></div>
+        <button type="button" class="btn btn-ghost" id="addPreviewBtn" style="width:auto;padding:8px 14px;font-size:0.8rem;">
+          <i class="fa-solid fa-plus"></i> Add preview link
+        </button>
+      </div>
+
+      <div class="field">
+        <label for="downloadLink">Download link *</label>
+        <input type="url" id="downloadLink" name="downloadLink" placeholder="https://..." required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="size">Size</label>
+          <input type="text" id="size" name="size" placeholder="e.g. 12MB">
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option>App</option>
+            <option>Website</option>
+            <option>Script</option>
+            <option>Bot</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ownerNumber">Owner contact number</label>
+        <input type="tel" id="ownerNumber" name="ownerNumber" placeholder="e.g. +255 7XX XXX XXX">
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" placeholder="What does it do?"></textarea>
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="submitBtn">
+        <i class="fa-solid fa-plus"></i> Add app
+      </button>
+
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+    <footer class="site-footer">All Rights are reserved | DarkX-Ultra Tech 2026</footer>
+  </div>
+
+  <%- include('bottomnav') %>
+
+  <script src="/js/add-app.js"></script>
+</body>
+</html>

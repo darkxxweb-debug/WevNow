@@ -52,7 +52,7 @@ async function loadStats() {
     const res = await fetch('/api/admin/stats');
     const s = await res.json();
     statGrid.innerHTML = `
-      <div class="admin-stat"><div class="admin-stat-num">${s.tools}</div><div class="admin-stat-label">tools</div></div>
+      <div class="admin-stat"><div class="admin-stat-num">${s.tools}</div><div class="admin-stat-label">apps</div></div>
       <div class="admin-stat"><div class="admin-stat-num">${s.users}</div><div class="admin-stat-label">users</div></div>
       <div class="admin-stat"><div class="admin-stat-num">${s.groups}</div><div class="admin-stat-label">WhatsApp groups</div></div>
       <div class="admin-stat"><div class="admin-stat-num">${s.vcfPanels}</div><div class="admin-stat-label">VCF panels</div></div>
@@ -66,10 +66,10 @@ async function loadStats() {
 async function loadToolsAdmin() {
   const list = document.getElementById('toolsAdminList');
   try {
-    const res = await fetch('/api/tools');
+    const res = await fetch('/api/apps');
     const tools = await res.json();
     if (!tools.length) {
-      list.innerHTML = '<div class="empty-state"><div class="glyph"><i class="fa-solid fa-box-open"></i></div><div>No tools yet.</div></div>';
+      list.innerHTML = '<div class="empty-state"><div class="glyph"><i class="fa-solid fa-box-open"></i></div><div>No apps yet.</div></div>';
       return;
     }
     list.innerHTML = tools
@@ -90,8 +90,8 @@ async function loadToolsAdmin() {
 
     list.querySelectorAll('.delToolBtn').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Delete this tool?')) return;
-        await fetch(`/api/tools/${btn.dataset.id}`, { method: 'DELETE' });
+        if (!confirm('Delete this app?')) return;
+        await fetch(`/api/apps/${btn.dataset.id}`, { method: 'DELETE' });
         loadToolsAdmin();
         loadStats();
       });
