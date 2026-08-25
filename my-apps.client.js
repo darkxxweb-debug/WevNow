@@ -22,6 +22,28 @@ function formatCount(n) {
   return `${n}`;
 }
 
+// Builds a link to this one app's public preview/download page and shares
+// it via the device's native share sheet, falling back to copying the link.
+async function shareApp(id, name) {
+  const url = `${window.location.origin}/apps/share/${id}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: name, text: `Check out ${name} on WaveHub`, url });
+      return;
+    } catch (err) {
+      // user cancelled, or share isn't supported here - fall back to copy
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    alert('Share link copied to clipboard!');
+  } catch (err) {
+    prompt('Copy this link to share:', url);
+  }
+}
+
 async function checkAuth() {
   try {
     const res = await fetch('/api/auth/me');
@@ -68,6 +90,7 @@ async function loadMyApps() {
           </div>
         </div>
         <div class="vcf-actions" style="margin-top:10px;">
+          <button class="btn btn-ghost shareBtn" data-id="${t._id}" data-name="${escapeHtml(t.name)}"><i class="fa-solid fa-share-nodes"></i> Share</button>
           <button class="btn btn-ghost editBtn" data-id="${t._id}"><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn btn-ghost delBtn" data-id="${t._id}" style="color:var(--danger);"><i class="fa-solid fa-trash"></i> Delete</button>
         </div>
@@ -75,6 +98,10 @@ async function loadMyApps() {
     `;
       })
       .join('');
+
+    myAppsList.querySelectorAll('.shareBtn').forEach((btn) => {
+      btn.addEventListener('click', () => shareApp(btn.dataset.id, btn.dataset.name));
+    });
 
     myAppsList.querySelectorAll('.editBtn').forEach((btn) => {
       btn.addEventListener('click', () => openEdit(btn.dataset.id));

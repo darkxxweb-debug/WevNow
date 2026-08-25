@@ -54,6 +54,7 @@ app.get('/js/vcf-panel.js', (req, res) => res.sendFile(path.join(__dirname, 'vcf
 app.get('/js/countries.js', (req, res) => res.sendFile(path.join(__dirname, 'countries.client.js')));
 app.get('/js/vcf-explore.js', (req, res) => res.sendFile(path.join(__dirname, 'vcf-explore.client.js')));
 app.get('/js/admin.js', (req, res) => res.sendFile(path.join(__dirname, 'admin.client.js')));
+app.get('/js/app-share.js', (req, res) => res.sendFile(path.join(__dirname, 'app-share.client.js')));
 
 // Pages
 app.get('/', (req, res) => res.render('index', { active: 'home' }));

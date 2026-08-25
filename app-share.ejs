@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= app.name %> · WaveHub</title>
+  <meta name="description" content="<%= (app.description || (app.name + ' - download it on WaveHub.')).slice(0, 160) %>">
+
+  <!-- Open Graph / WhatsApp / Facebook preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= app.name %> · WaveHub">
+  <meta property="og:description" content="<%= (app.description || 'Download this app on WaveHub.').slice(0, 200) %>">
+  <% if (app.coverPhoto) { %><meta property="og:image" content="<%= app.coverPhoto %>"><% } %>
+  <meta property="og:url" content="<%= shareUrl %>">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= app.name %> · WaveHub">
+  <meta name="twitter:description" content="<%= (app.description || 'Download this app on WaveHub.').slice(0, 200) %>">
+  <% if (app.coverPhoto) { %><meta name="twitter:image" content="<%= app.coverPhoto %>"><% } %>
+
+  <%- include('head') %>
+</head>
+<body class="standalone-body">
+  <div class="shell standalone-shell">
+    <div class="standalone-header">
+      <a href="/apps" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
+        <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-name">Wave<span>Hub</span></div>
+      </a>
+    </div>
+
+    <% if (app.coverPhoto) { %>
+      <div class="vcf-cover-wrap" style="max-height:220px;">
+        <img src="<%= app.coverPhoto %>" alt="<%= app.name %>">
+      </div>
+    <% } %>
+
+    <h1 class="page-title" style="margin-bottom:4px;"><%= app.name %></h1>
+    <p class="page-sub">
+      <%= app.category || 'Other' %><% if (app.size) { %> &middot; <%= app.size %><% } %><% if (app.ownerUsername) { %> &middot; shared by <%= app.ownerUsername %><% } %>
+    </p>
+
+    <div class="detail-rating-row">
+      <span class="app-rating-num"><%= app.ratingCount ? (app.ratingSum / app.ratingCount).toFixed(1) : 'New' %></span>
+      <span class="app-downloads">(<%= app.ratingCount || 0 %> rating<%= app.ratingCount === 1 ? '' : 's' %>) &middot; <%= app.downloads || 0 %> downloads</span>
+    </div>
+
+    <button class="btn btn-primary" id="shareDownloadBtn" data-id="<%= app._id %>" data-link="<%= app.downloadLink %>" style="margin-top:16px;">
+      <i class="fa-solid fa-download"></i> Download
+    </button>
+
+    <button class="btn btn-ghost" id="shareAgainBtn" data-url="<%= shareUrl %>" style="margin-top:10px;">
+      <i class="fa-solid fa-share-nodes"></i> Share this app
+    </button>
+
+    <% if (app.description) { %>
+      <div class="tool-desc" style="margin-top:16px;"><%= app.description %></div>
+    <% } %>
+
+    <% if (app.ownerNumber) { %>
+      <div class="tool-meta" style="margin-top:10px;"><span><i class="fa-solid fa-phone"></i> <%= app.ownerNumber %></span></div>
+    <% } %>
+
+    <% if ((app.previewLinks || []).length) { %>
+      <div class="result-actions" style="flex-wrap:wrap;margin-top:16px;">
+        <% app.previewLinks.slice(0, 8).forEach(function (p, i) { %>
+          <a class="btn btn-ghost" href="<%= p %>" target="_blank" rel="noopener noreferrer" style="padding:6px 10px;font-size:0.76rem;">Preview <%= i + 1 %></a>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <div class="standalone-footer">
+      <a href="/apps" style="color:var(--text-muted); text-decoration:underline;">Browse more apps on WaveHub</a>
+      <br>
+      <span>All Rights are reserved | DarkX-Ultra Tech 2026</span>
+    </div>
+  </div>
+
+  <script src="/js/app-share.js"></script>
+</body>
+</html>

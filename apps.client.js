@@ -110,6 +110,13 @@ function render() {
       await recordDownload(btn.dataset.id, btn.dataset.link);
     });
   });
+
+  toolList.querySelectorAll('.share-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      shareApp(btn.dataset.id, btn.dataset.name);
+    });
+  });
 }
 
 async function recordDownload(id, link) {
@@ -121,6 +128,28 @@ async function recordDownload(id, link) {
   window.open(link, '_blank', 'noopener');
   const tool = allTools.find((t) => t._id === id);
   if (tool) tool.downloads = (tool.downloads || 0) + 1;
+}
+
+// Builds a link to this one app's public preview/download page and shares
+// it via the device's native share sheet, falling back to copying the link.
+async function shareApp(id, name) {
+  const url = `${window.location.origin}/apps/share/${id}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: name, text: `Check out ${name} on WaveHub`, url });
+      return;
+    } catch (err) {
+      // user cancelled, or share isn't supported here - fall back to copy
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    alert('Share link copied to clipboard!');
+  } catch (err) {
+    prompt('Copy this link to share:', url);
+  }
 }
 
 function appRowHtml(t) {
@@ -140,7 +169,10 @@ function appRowHtml(t) {
             <span class="app-downloads">&middot; ${formatCount(t.downloads || 0)} downloads</span>
           </div>
         </div>
-        <button class="btn btn-primary install-btn" data-id="${t._id}" data-link="${escapeHtml(t.downloadLink)}">Install</button>
+        <div class="app-row-btns">
+          <button class="icon-btn share-btn" data-id="${t._id}" data-name="${escapeHtml(t.name)}" aria-label="Share ${escapeHtml(t.name)}"><i class="fa-solid fa-share-nodes"></i></button>
+          <button class="btn btn-primary install-btn" data-id="${t._id}" data-link="${escapeHtml(t.downloadLink)}">Install</button>
+        </div>
       </div>
     </div>
   `;
@@ -203,9 +235,14 @@ function renderAppDetail(t, comments) {
       <span class="app-downloads">&middot; ${formatCount(t.downloads || 0)} downloads</span>
     </div>
 
-    <button class="btn btn-primary" id="detailInstallBtn" style="margin:14px 0;">
-      <i class="fa-solid fa-download"></i> Install
-    </button>
+    <div style="display:flex; gap:10px; margin:14px 0;">
+      <button class="btn btn-primary" id="detailInstallBtn" style="flex:1;">
+        <i class="fa-solid fa-download"></i> Install
+      </button>
+      <button class="btn btn-ghost" id="detailShareBtn" style="flex:0 0 auto; width:auto; padding:13px 18px;" aria-label="Share this app">
+        <i class="fa-solid fa-share-nodes"></i>
+      </button>
+    </div>
 
     ${t.description ? `<div class="tool-desc" style="margin-bottom:12px;">${escapeHtml(t.description)}</div>` : ''}
     ${t.ownerNumber ? `<div class="tool-meta" style="margin-bottom:12px;"><span><i class="fa-solid fa-phone"></i> ${escapeHtml(t.ownerNumber)}</span></div>` : ''}
@@ -234,6 +271,7 @@ function renderAppDetail(t, comments) {
   `;
 
   document.getElementById('detailInstallBtn').addEventListener('click', () => recordDownload(t._id, t.downloadLink));
+  document.getElementById('detailShareBtn').addEventListener('click', () => shareApp(t._id, t.name));
 
   document.getElementById('detailStarRate').querySelectorAll('i').forEach((star) => {
     star.addEventListener('click', async () => {

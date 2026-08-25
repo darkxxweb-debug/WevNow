@@ -225,6 +225,24 @@ router.delete('/api/apps/:appId/comments/:commentId', requireAdmin, async (req, 
   }
 });
 
+// ---------- public share page ----------
+// GET /apps/share/:id - a public, no-login-required page for exactly one
+// app. This is the link people get from the Share button: opening it shows
+// a preview of that single app (name, cover, description, rating) with a
+// big Download button, and unfurls nicely when pasted into WhatsApp thanks
+// to the Open Graph tags in app-share.ejs.
+router.get('/apps/share/:id', async (req, res) => {
+  try {
+    const app = await Tool.findById(req.params.id);
+    if (!app) return res.status(404).render('404', { active: '' });
+
+    const shareUrl = `${req.protocol}://${req.get('host')}/apps/share/${app._id}`;
+    res.render('app-share', { active: '', app, shareUrl });
+  } catch (err) {
+    return res.status(404).render('404', { active: '' });
+  }
+});
+
 // DELETE /api/apps/:id - owner of the app, or admin
 router.delete('/api/apps/:id', async (req, res) => {
   try {

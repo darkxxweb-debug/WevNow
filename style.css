@@ -808,6 +808,19 @@ a { color: inherit; text-decoration: none; }
   padding: 8px 16px;
   font-size: 0.82rem;
 }
+.app-row-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.share-btn {
+  color: var(--text-muted);
+}
+.share-btn:hover, .share-btn:active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 .app-row-expand {
   max-height: 0;
   overflow: hidden;
