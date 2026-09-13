@@ -160,3 +160,68 @@ if (adminPasswordInput) {
     if (e.key === 'Enter') submitAdminPassword();
   });
 }
+
+// ---------- theme switcher (orange / light blue) ----------
+const THEME_KEY = 'wh_theme';
+const themeOptBtns = document.querySelectorAll('.theme-opt');
+
+function applyTheme(theme) {
+  if (theme === 'blue') {
+    document.documentElement.setAttribute('data-theme', 'blue');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  themeOptBtns.forEach((b) => {
+    b.classList.toggle('active', b.dataset.themeChoice === theme);
+  });
+}
+
+if (themeOptBtns.length) {
+  let savedTheme = 'orange';
+  try {
+    savedTheme = localStorage.getItem(THEME_KEY) || 'orange';
+  } catch (e) {}
+  applyTheme(savedTheme);
+
+  themeOptBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeChoice;
+      try {
+        localStorage.setItem(THEME_KEY, theme);
+      } catch (e) {}
+      applyTheme(theme);
+    });
+  });
+}
+
+// ---------- WaveHub app promo popup ----------
+const PROMO_DOWNLOADED_KEY = 'wh_app_downloaded';
+const promoOverlay = document.getElementById('waveHubPromoOverlay');
+const promoCloseBtn = document.getElementById('promoCloseBtn');
+const promoDownloadBtn = document.getElementById('promoDownloadBtn');
+
+if (promoOverlay) {
+  let alreadyDownloaded = false;
+  try {
+    alreadyDownloaded = localStorage.getItem(PROMO_DOWNLOADED_KEY) === '1';
+  } catch (e) {}
+
+  if (!alreadyDownloaded) {
+    setTimeout(() => promoOverlay.classList.add('open'), 500);
+  }
+
+  promoOverlay.addEventListener('click', (e) => {
+    if (e.target === promoOverlay) promoOverlay.classList.remove('open');
+  });
+}
+if (promoCloseBtn) {
+  promoCloseBtn.addEventListener('click', () => promoOverlay.classList.remove('open'));
+}
+if (promoDownloadBtn) {
+  promoDownloadBtn.addEventListener('click', () => {
+    try {
+      localStorage.setItem(PROMO_DOWNLOADED_KEY, '1');
+    } catch (e) {}
+    setTimeout(() => promoOverlay.classList.remove('open'), 300);
+  });
+}
