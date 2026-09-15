@@ -14,17 +14,65 @@ function extractYouTubeUrl(raw) {
   return null;
 }
 
-function pickBestFormats(data) {
-  const formats = Array.isArray(data.formats) ? data.formats : [];
-  const videoFormats = formats.filter((f) => f.type === 'video' || f.hasVideo);
-  const audioFormats = formats.filter((f) => f.type === 'audio' || f.hasAudio);
+// A couple of retries because free/worker-hosted extraction APIs occasionally
+// throw a transient 500/timeout on the first hit but succeed right after.
+async function fetchWithRetry(url, retries = 1) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await fetchJson(url);
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) await new Promise((r) => setTimeout(r, 700));
+    }
+  }
+  throw lastErr;
+}
 
-  const bestVideo = videoFormats.length
-    ? videoFormats.reduce((a, b) => ((a.height || 0) >= (b.height || 0) ? a : b))
-    : null;
-  const bestAudio = audioFormats.length
-    ? audioFormats.reduce((a, b) => ((a.bitrate || 0) >= (b.bitrate || 0) ? a : b))
-    : null;
+function pickYouTubeMedia(data) {
+  // Primary shape used by this worker API: { videos: { "144": url, "360": url, "720": url, ... }, audios: {...} }
+  const videosMap = data.videos || data.video_urls || null;
+  const audiosMap = data.audios || data.audio_urls || null;
+
+  function bestFromMap(map) {
+    if (!map || typeof map !== 'object') return null;
+    const entries = Object.entries(map).filter(([, v]) => typeof v === 'string' && v);
+    if (!entries.length) return null;
+    // Highest numeric quality first (e.g. 720 before 360). Non-numeric keys sort last.
+    entries.sort((a, b) => (parseInt(b[0], 10) || 0) - (parseInt(a[0], 10) || 0));
+    return { url: entries[0][1], quality: entries[0][0] };
+  }
+
+  let bestVideo = bestFromMap(videosMap);
+  let bestAudio = bestFromMap(audiosMap);
+
+  // Legacy fallback: a `formats` array with per-item type/height/bitrate.
+  if (!bestVideo && !bestAudio && Array.isArray(data.formats)) {
+    const formats = data.formats;
+    const videoFormats = formats.filter((f) => f.type === 'video' || f.hasVideo);
+    const audioFormats = formats.filter((f) => f.type === 'audio' || f.hasAudio);
+
+    if (videoFormats.length) {
+      const v = videoFormats.reduce((a, b) => ((a.height || 0) >= (b.height || 0) ? a : b));
+      bestVideo = { url: v.url, quality: v.height ? `${v.height}p` : '' };
+    }
+    if (audioFormats.length) {
+      const a = audioFormats.reduce((a, b) => ((a.bitrate || 0) >= (b.bitrate || 0) ? a : b));
+      bestAudio = { url: a.url, quality: a.bitrate ? `${a.bitrate}kbps` : '' };
+    }
+  }
+
+  // Last-resort fallback: a single direct string/object field.
+  if (!bestVideo) {
+    const v = data.video || data.video_url || data.mp4 || data.download_url;
+    if (typeof v === 'string' && v) bestVideo = { url: v };
+    else if (v && typeof v === 'object' && v.url) bestVideo = { url: v.url };
+  }
+  if (!bestAudio) {
+    const a = data.audio || data.audio_url || data.mp3;
+    if (typeof a === 'string' && a) bestAudio = { url: a };
+    else if (a && typeof a === 'object' && a.url) bestAudio = { url: a.url };
+  }
 
   return { bestVideo, bestAudio };
 }
@@ -39,25 +87,15 @@ router.get('/api/download', async (req, res) => {
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 35000);
+    const data = await fetchWithRetry(`${YT_EXTRACT_ENDPOINT}${encodeURIComponent(cleanUrl)}`, 2);
 
-    const response = await fetch(`${YT_EXTRACT_ENDPOINT}${encodeURIComponent(cleanUrl)}`, {
-      headers: { Accept: 'application/json' },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (!response.ok) throw new Error(`Upstream error: ${response.status}`);
-
-    const data = await response.json();
     if (data.status === false || data.error) {
       throw new Error(data.message || data.error || 'Video not accessible.');
     }
 
     const title = data.title || data.video_title || 'Untitled track';
     const thumbnail = data.thumbnail || data.thumb || data.image || '';
-    const { bestVideo, bestAudio } = pickBestFormats(data);
+    const { bestVideo, bestAudio } = pickYouTubeMedia(data);
 
     if (!bestVideo && !bestAudio) {
       return res.status(422).json({ error: 'No downloadable formats found for this link.' });
@@ -172,13 +210,28 @@ router.get('/api/download/tiktok', async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Please provide a TikTok link.' });
 
-  try {
-    const data = await fetchJson(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
-    const result = data.data;
-    if (!result) return res.status(422).json({ error: 'No downloadable video found for this link.' });
+  // tikwm sometimes returns a full CDN URL and sometimes a path relative to
+  // tikwm.com — blindly prefixing every field broke playable video URLs
+  // (while audio happened to already be checked correctly), so normalize both the same way.
+  function normalizeTikwmUrl(u) {
+    if (!u || typeof u !== 'string') return '';
+    return u.startsWith('http') ? u : `https://www.tikwm.com${u}`;
+  }
 
-    const videoUrl = result.play ? `https://www.tikwm.com${result.play}` : (result.hdplay ? `https://www.tikwm.com${result.hdplay}` : '');
-    const audioUrl = result.music ? (result.music.startsWith('http') ? result.music : `https://www.tikwm.com${result.music}`) : '';
+  try {
+    const data = await fetchWithRetry(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, 1);
+    const result = data.data;
+    if (data.code !== 0 || !result) {
+      return res.status(422).json({ error: data.msg || 'No downloadable video found for this link.' });
+    }
+
+    // Prefer HD (no watermark) first, then the standard no-watermark link.
+    const videoUrl = normalizeTikwmUrl(result.hdplay || result.play);
+    const audioUrl = normalizeTikwmUrl(result.music);
+
+    if (!videoUrl && !audioUrl) {
+      return res.status(422).json({ error: 'No downloadable video found for this link.' });
+    }
 
     DownloadHistory.create({
       title: result.title || 'TikTok video',
